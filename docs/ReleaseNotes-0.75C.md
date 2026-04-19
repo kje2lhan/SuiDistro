@@ -15,6 +15,9 @@
 | CSV export | Fix | NUMERIC/DECIMAL columns in CSV export now use exact column scale |
 | Security fix (compilation) | Fix | `java.awt.Desktop` name clash with `Desktop` field resolved — "Send query to" now compiles correctly |
 | Documentation | Update | `README.md` updated with 0.75B section |
+| ShowQryBox — query browser | Fix | Case-insensitive search: filter now matches SQL content regardless of case |
+| QueryRep / SuiAdapter — row filter | Fix | String column filtering now works for columns with zero or unknown display length (e.g. BigQuery `STRING`) |
+| SuiAdapter — row filter | Fix | Filter length threshold made consistent (≤ 500 or 0) in both the dialog guard and the filter engine |
 
 ---
 
@@ -80,3 +83,43 @@ preferences persistence fix, and the new `CredentialHandling.md` document.
 - Users who observed trailing-zero truncation or scientific-notation display in
   NUMERIC/DECIMAL result columns, or incorrect values in CSV exports for those column
   types, should see correct output after this release.
+- Users who experienced the query-browser search (`ShowQryBox`) not matching lower-case
+  SQL content should now get correct case-insensitive results.
+- Users running against BigQuery (or other databases that report STRING column display
+  length as 0) can now apply row filters on string columns in the results panel.
+
+---
+
+## Detailed Changes — 2026-04-19
+
+### `src/ShowQryBox.java` — Case-insensitive filter in query browser (commit `9a87526`)
+
+**Problem**  
+The filter string entered in the query browser was uppercased before comparison, but the
+SQL text retrieved from the store was compared as-is. Searches for lower-case content
+never matched.
+
+**Fix**  
+`getSQLStmt(x).toUpperCase().contains(filter)` — the SQL content is now also uppercased
+before the `contains()` check, making the comparison fully case-insensitive.
+
+---
+
+### `src/QueryRep.java` + `src/SuiAdapter.java` — String column filter for zero-length columns (commit `1ba2157`)
+
+**Problem**  
+BigQuery (and some other JDBC drivers) report `getColumnDisplaySize()` as `0` for
+unconstrained `STRING` columns. The filter dialog guard in `QueryRep` blocked filtering
+for any column with length > 500, and the actual filter loop in `SuiAdapter` skipped
+columns unless length was < 250. This meant:
+
+1. The filter dialog was shown but filtering was silently skipped for columns in the
+   250–500 range.
+2. Columns with length 0 were blocked entirely even though they are filterable strings.
+
+**Fix**  
+- `QueryRep.java`: dialog guard now allows filtering when length is 0, and only blocks
+  when length is both > 500 *and* non-zero: `tcLn[ix] > 500 && tcLn[ix] != 0`.
+- `SuiAdapter.java`: filter loop threshold raised from `< 250` to `<= 500`, and length
+  0 is also explicitly allowed: `Length[j] <= 500 || Length[j] == 0`.
+
