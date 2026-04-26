@@ -1,5 +1,37 @@
 # suidev080
 
+Sui 0.75G
+---------
+- Toggle Comment on selected lines (Ctrl+7)
+- Go to Line dialog (Ctrl+G)
+- Block Indent / Unindent (Tab / Shift+Tab with selection)
+- Uppercase / Lowercase Selection (Ctrl+Shift+U / Ctrl+Shift+L)
+- Parenthesis matching highlight — enable/disable from right-click menu
+- Cursor position indicator (Ln / Col) displayed above query tabs
+- SQL Object Tree: Schema / Table filter fields with titled border
+- SQL Object Tree: Better icons — table grid for SQL Tree, pages for Query Tree toolbar buttons
+- SQL Object Tree: Frame icon switches between `db.gif` (SQL tree) and `pages.gif` (file tree)
+- Query Editor popup: "Build IN List from Selection" — converts selected values to SQL `IN (…)` clause
+- Query Editor popup: "Copy Columns from Selection…" — extracts fixed-position column range to clipboard
+- Query Report popup: "Copy WHERE clause from row" — builds `WHERE col = val AND …` from the selected row
+- Bug fix: Status message not cleared before showing "Columns copied to clipboard"
+
+Sui 0.75F
+---------
+- New `SQLTreePanel` — lazy-loading JTree of schemas → tables → columns
+- Toolbar buttons to show SQL Object Tree / Query File Tree
+- Right-click table node: "Build SQL to clipboard", "Draw SQL (SELECT)", "Draw SQL (INSERT)"
+- Drag table node to query window — choose `schema.table` or full `SELECT` statement
+- Drag column node to query window — inserts column name at caret
+- DB2: SQLCODE -4471 resolved — `conn.commit()` added after every metadata `ResultSet` close
+- DB2: System schemas (SYSIBM, SYSCAT, SYSSTAT, etc.) filtered from tree
+- DB2: `getColumns()` called with `null` column-name pattern instead of `%` wildcard
+- BigQuery: OAuth connection cache preserved — `closeConn()` is a no-op for BigQuery
+- BigQuery: Schema list filtered to current project only (extracted from JDBC URL `ProjectId=`)
+- BigQuery: `project.dataset` schema name prefix stripped before `getTables()` call
+- Mimer SQL: Tables now load — `null` catalog and `null` table-type filter used in `getTables()`
+- Mimer SQL: Schema name uppercased for Mimer and DB2 before metadata calls
+
 Sui 0.75C
 ---------
 - Fixed decimal precision for NUMERIC/DECIMAL columns in query results panel and CSV export
