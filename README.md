@@ -1,5 +1,20 @@
 # suidev080
 
+Sui 0.75I
+---------
+- SQL Object Tree: Pressing Enter in the Schema or Table filter field now immediately refreshes the tree (no need to click the Refresh button)
+- BigQuery: Improved catalog resolution — `effectiveCatalog` derived from `projectid=` in the JDBC URL, with `supportsCatalogsInTableDefinitions` check to handle catalog-vs-schema differences correctly
+- Bug fix: SQL content in a tab is now preserved correctly when a new tab is opened (`newTabSQL` guard added to `TabbedPaneClassic`)
+
+Sui 0.75H
+---------
+- SQLite support: SQLite JDBC driver (org.xerial sqlite-jdbc) is now bundled — SQLite databases can be connected to without installing a separate driver
+- Query Editor popup: "Text → Insert Statement" — converts selected text rows into SQL `INSERT INTO schema.table VALUES (…)` statements; supports single-row and multi-row batch mode
+- SQL Object Tree: Table loading now respects catalog for catalog-aware databases (`sCatalog` parameter passed to `getTables()`)
+- SQL Object Tree: Mimer SQL support improved — tables are retrieved correctly with product-name detection
+- TableProvider: catalog-aware table listing (`GetCatalog` used when available)
+- Updated FlatLaf Look & Feel library — newer version bundled with additional built-in themes (Darker, Light, Lighter, Ocean, Oceanic, Owl, Palenight, Pro)
+
 Sui 0.75G
 ---------
 - Toggle Comment on selected lines (Ctrl+7)
