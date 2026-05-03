@@ -1,5 +1,69 @@
 # suidev080
 
+Sui 0.75L
+---------
+- New `SqlDialectConverter` engine — DB2 ↔ BigQuery SQL translation (bidirectional)
+- DB2 → BQ: strips `WITH UR/CS/RR/RS`, rewrites `CURRENT TIMESTAMP/DATE/TIME` → BQ equivalents, removes `SYSIBM.SYSDUMMY1` / `DUAL`, `FETCH FIRST n ROWS ONLY` → `LIMIT n`
+- DB2 → BQ: interval arithmetic — `CURRENT TIMESTAMP - 7 DAYS` → `TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` and `+` / `-` variants
+- DB2 → BQ: function transforms — YEAR/MONTH/DAY/HOUR/MINUTE/SECOND → EXTRACT, CHAR/VARCHAR → CAST STRING, INTEGER/INT → CAST INT64, FLOAT/DOUBLE → CAST FLOAT64, STRIP → TRIM, LOCATE/POSSTR → STRPOS (args reversed)
+- DB2 → BQ: CTE column-list push-down — inlines `(col, …)` aliases as `AS` clauses on SELECT items, removes the column list from the WITH clause
+- BQ → DB2: backtick identifiers → double-quoted, splits `project.dataset.table` segments; CURRENT_TIMESTAMP()/DATE()/TIME() → DB2 special registers; STRPOS → LOCATE (args reversed), IF → CASE WHEN, IFNULL → COALESCE, TO_HEX → HEX, SAFE_CAST → CAST with warning
+- New `ConvertSqlDialog` — "Convert SQL Dialect (experimental)": From/To combo (default DB2→BQ, combos enforce opposite selection), result + warnings areas, "Format using Extended Format SQL" checkbox, target schema field; settings persisted across invocations
+- "Convert SQL Dialect…" added to query right-click popup
+- Bug fix: Query History Viewer URL filter field was invisible on first open — width capped at 200 px
+- Bug fix: Query History Viewer `NullPointerException` during filter navigation when history entry has no SQL text
+- Bug fix: executing a query when not connected now shows "Query cannot be executed - not connected" instead of a `NullPointerException`
+
+Sui 0.75K
+---------
+- SQL Object Tree: index sub-tree per table — Indexes folder with UNIQUE/NON-UNIQUE entries and column children; enabled by new "Include indexes" checkbox (left of "Include routines")
+- Preferences → Start Up: "Include indexes in SQL Tree" checkbox — controls default checked state of the SQL Tree indexes checkbox
+- SQL Object Tree right-click table: Count Rows (`COUNT_BIG(*)` for DB2, `COUNT(*)` otherwise)
+- SQL Object Tree right-click table: List Referential Integrity (uses `getImportedKeys`)
+- SQL Object Tree right-click column: Column Statistics — MIN, MAX, COUNT DISTINCT in one query
+- SQL Object Tree right-click column: Sample Unique Values — `SELECT DISTINCT col` limited by Max Rows setting
+- Bug fix: "Build SQL" no longer shows spurious "SQL opened in SQLBox" message
+- ShowSQL right-click popup: "Exec. → Append" added
+- "Exec. → Derby" replaced by "Exec. → SQLite" in query right-click popup; checks for SQLite JDBC driver in both system and Sui dynamic class loaders before opening
+- New `CopyToSQLite` dialog: SQLite DB file path, table name, max rows, drop/re-create option; file path persisted between invocations
+- `RunDerby` / `CreateDDL`: full SQLite support — schema-less `CREATE TABLE` / `DROP TABLE` / `INSERT INTO`; automatic table creation for SQLite URLs; inserting into an existing table without re-create no longer errors
+- Bug fix: `setReadOnly(true)` on source connection silently ignored when driver rejects it mid-transaction (e.g. BigQuery → SQLite copy)
+- Bug fix (Mimer): `AbstractMethodError` on `getFunctionColumns()` caught; falls back to `getProcedureColumns()`
+- Bug fix (Mimer): dummy table corrected from `SYSTEM_ONEROW` to `SYSTEM.ONEROW`
+
+Sui 0.75J
+---------
+- Preferences → Query: new Ext Format SQL panel — dialect, indent, uppercase, lines between queries, max column length, skip whitespace near parentheses, comma position (trailing/leading)
+- Ext Format SQL: leading comma post-processing option moves trailing commas to the beginning of the next line
+- SQL Editor: Trim Trailing Whitespace — Edit menu (Ctrl+Shift+X) and right-click menu
+- SQL Object Tree right-click: "Additional Table Info" for DB2 (LUW and z/OS) and BigQuery
+- SQL Object Tree right-click: "Table Space Information" for DB2 (LUW and z/OS, tables only)
+- SQL Object Tree right-click: "View definition" for DB2 and BigQuery (view nodes only)
+- SQL Object Tree: BigQuery table/column names now preserve original case (case-sensitive JDBC driver fix)
+- Bug fix: F6 / F7 / F8 DB2 actions now correctly distinguish DB2 for z/OS from DB2 LUW
+- Bug fix: BigQuery unbounded STRING columns no longer excluded from Query Report filter row
+- Replaced dead `com.foundationdb:fdb-sql-parser` (2015) with `com.github.jsqlparser:jsqlparser:4.9` (Apache 2.0, actively maintained)
+- Right-click menu: "Syntax Validate by Prepare" — validates selected SQL via the active JDBC connection (shown only when connected)
+- Query History Viewer: every executed query now records a timestamp and connection URL (up to 9000 entries, configurable in Preferences → Query)
+- Query History Viewer: URL filter combobox — browse history for a specific connection only
+- Query History Viewer: AND/OR/IN advanced search syntax in the Find field
+- Query History Viewer: status bar shows timestamp + URL for the current entry; tooltip summarises entry count and date range
+- Preferences → Query: configurable variable substitution character (default `&`, e.g. `:` for JDBC-style) stored as `SUI.VARSUBS.CHAR`
+- SQL Object Tree right-click table: "Generate DDL" — generates `CREATE TABLE` statement from database metadata including columns, types, defaults, NOT NULL and primary key constraint
+- SQL Object Tree: "Include Stored Procedures" checkbox — when enabled, schemas show a Tables group and a Stored Procedures group
+- SQL Object Tree right-click stored procedure: "Draw Stored Procedure (F9)" and "Execute Stored Procedure" (draw + run in one step)
+- SQL Object Tree right-click function: "Draw Function" — inserts `SELECT schema.func(&p1, ?)` snippet using the configured substitution character
+- SQL Object Tree: SP and Function nodes are draggable — drop on the query window generates the `{CALL …}` or `SELECT func(…)` snippet
+- SQL Object Tree: "Build SQL to clipboard" renamed to "Build SQL"
+- SQL Object Tree: "Include routines" checkbox (renamed from "Include Stored Procedures") — shows a Routines group per schema; default checked state set in Start Up preferences
+- SQL Object Tree: BigQuery user-defined functions now loaded (via `getFunctions()`); function parameters fetched via `getFunctionColumns()`
+- SQL Object Tree: Draw Function respects the "Draw SQL to SQLBox" preference
+- ShowSQL dialog: right-click context menu (execute, format, copy, copy to query sheet)
+- QueryBox Viewer: right-click context menu — same popup as ShowSQL
+- Preferences → Misc: "Draw SQL to SQLBox" — Draw Insert, Draw SP, Draw Function and Build SQL open in a new SQLBox window instead of copying to clipboard
+- Preferences → Start Up: "Include routines in SQL Tree" — controls default checked state of the SQL Tree routines checkbox
+- Toolbar: Query File Tree button icon replaced with OS-native folder icon at correct 16×16 size (was an oversized 26×26 `pages.gif`)
+
 Sui 0.75G
 ---------
 - Toggle Comment on selected lines (Ctrl+7)
