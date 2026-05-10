@@ -1,5 +1,43 @@
 # suidev080
 
+Sui 0.75N
+---------
+- New **SQL Dialect Converter** additions (DB2 → BigQuery): `DECIMAL`, `VARCHAR_FORMAT`, `MERGE INTO`, `NVL`, `NVL2`, `ZEROIFNULL`, `NULLIFZERO`, `DECODE`, `ADD_MONTHS`, `CHR`, `ASCII`, `TRUNCATE`, `MINUS → EXCEPT DISTINCT`
+- SQL Dialect Converter: CTE `SELECT *` — column header list stripped and warned instead of left as invalid BigQuery syntax
+- SQL Dialect Converter: `MERGE INTO target alias` → `MERGE target AS alias`; target alias de-qualified inside `UPDATE SET` block
+- SQL Dialect Converter: DB2 date format tokens mapped to BigQuery strftime tokens for `VARCHAR_FORMAT`
+- SQL Dialect Converter: warning bullet character encoding fixed (`â€¢` → `•`)
+- "Convert SQL Dialect…" added to the **Options** menu
+- Right-click menu reorganised — Format/Validate/Convert at top; file/table ops grouped; Edit ops at bottom; "Sheet Preferences" removed
+- Inline directive `#URL=` — switches JDBC connection mid-script to any previously-connected URL (credentials resolved from session memory, no prompt)
+- Inline directive `#SET KEY=VALUE` — new natural syntax alongside original `#SET= KEY VALUE` form
+- Query Report title now shows the `#URL=` override URL instead of the URL-box URL
+- Syntax highlighting: ~60 additional SQL keywords (JOIN, ON, NULL, IS, LIKE, BETWEEN, WITH, OVER, MERGE, LIMIT, EXCEPT, INTERSECT, and more; DDL: INDEX, VIEW, UNIQUE, PRIMARY KEY, FOREIGN, PROCEDURE, FUNCTION, TRIGGER, SEQUENCE; functions: NVL, TRIM, EXTRACT, ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, CURRENT_DATE/TIME/TIMESTAMP, and more)
+- Syntax highlighting: `/*` inside a `--` single-line comment no longer colours the rest of the document
+- Syntax highlighting: scanning skipped when document exceeds 5 000 characters (performance); styles reset on every change to prevent colour bleeding when toggling off
+- SQL Object Tree: schema expands into typed sub-folders — **Tables / Views / Aliases / Synonyms**; empty groups omitted; Routines group appended when "Include routines" is checked
+- Excel export: numeric columns written as Excel numeric cells — decimals via `BigDecimal`, integers separately; configurable integer and decimal format strings
+- Excel export: meta sheet now includes result set status (full/partial) and row count
+- Excel export: font, integer format, and decimal format configurable in **Preferences → Export**
+- Bug fix (ConnDB): BigQuery embedded `https://` URL no longer incorrectly stripped by `sanitizeUrl`
+- Toolbar: Connection Manager button tooltip updated; action wired to `ConnManager` dialog
+
+Sui 0.75M
+---------
+- New **Connection Manager** dialog (`File → Connection Manager…`) — unified replacement for the old `connP` dialog
+  - Left panel: named alias list with New, Copy, Remove buttons
+  - Tab 1 (Connection): Alias, Driver combobox, Server, Port, Database/Project, SID, URL (auto-filled from template or directly editable), User, Password (Show/Hide), Auto-login, Test Connection
+  - Tab 2 (Driver / JAR): global driver catalog with Name, Driver Class, JAR path, and live Status column (✔/✘); Browse JAR, Reload JARs buttons
+  - Tab 3 (JDBC Properties): editable key/value table backed by `SuiConnPref.pro`
+  - Password only written to disk when Auto-login is explicitly ticked
+  - Auto-migrates legacy `connprop.pro` and old `SUI.JDBCURL.0.N` entries to new `SuiConnProp.pro` format on first Save
+- URL selection in main panel auto-fills userid from the matching saved connection profile when the field is blank
+- URL selection auto-fills password when the saved profile has `AUTOLOGIN=Y` and a non-empty saved password
+- New **Keywords** tab in Preferences — editable 3-column table (Trigger / Expansion / Description) for F1 auto-completion shortcuts; saved to `SuiKeywProp.pro`
+- Bundled `keyw.pro` in JAR — 30 default SQL keyword completions active on first run (no user file required)
+- Keyword merge: bundled defaults are used as a base; user edits in `SuiKeywProp.pro` override matching triggers
+- Bug fix (MariaDB): `ArrayIndexOutOfBoundsException` when port field is left blank — stray `:/` colon-slash stripped from JDBC URL before connecting
+
 Sui 0.75L
 ---------
 - New `SqlDialectConverter` engine — DB2 ↔ BigQuery SQL translation (bidirectional)
