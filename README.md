@@ -1,5 +1,16 @@
 # suidev080
 
+Sui 0.75O
+---------
+- **Connection status bar** — full-width bar between the toolbar and query tabs; light green when connected, grey when not; right-click for a popup of all in-session connections to quickly switch databases
+- Cursor position label (`Ln / Col`) moved to the very bottom of the window — standard IDE convention
+- **Query Sheet Overview**: colour swatch column — left-click to assign a tab colour via `JColorChooser`, right-click to clear; colours saved/restored across sessions (`SUI.TABCOLOR.N`)
+- Query Sheet Overview: sheet name column editable in-place (double-click to rename; propagated to the tab title)
+- **Query Report** row count label at the bottom of every result window — "Rows: N" or "Rows: N (of M)" when a filter is active
+- Connection Manager: drag-and-drop alias reordering in the connection list; ▲/▼ buttons as keyboard alternative
+- Exec-Append dialog pre-selects the last-used URL and driver on open
+- Auto-fills userid/password from session cache or connection profile when switching URL
+
 Sui 0.75N
 ---------
 - New **SQL Dialect Converter** additions (DB2 → BigQuery): `DECIMAL`, `VARCHAR_FORMAT`, `MERGE INTO`, `NVL`, `NVL2`, `ZEROIFNULL`, `NULLIFZERO`, `DECODE`, `ADD_MONTHS`, `CHR`, `ASCII`, `TRUNCATE`, `MINUS → EXCEPT DISTINCT`
