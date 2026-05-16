@@ -6,11 +6,12 @@ Every SELECT query opens a result window with a toolbar, a scrollable table, and
 
 ## Toolbar
 
-| Button | Action |
+| Button / Control | Action |
 |---|---|
 | Export CSV | Export all visible rows to a CSV file |
 | Export XLS | Export to Excel (requires the Apache POI library on the classpath) |
-| Copy | Copy selected cells to the clipboard |
+| Copy | Copy selected cells to the clipboard (space-separated, one line per row) |
+| **Trim** checkbox | When checked, trailing whitespace is stripped from every cell value and from each copied line before it is placed on the clipboard. Applies to both the toolbar Copy button and the right-click **Copy selected data** menu item. |
 | Print | Print the result table |
 | Print Preview | Preview before printing |
 | Page Setup | Configure paper size and orientation |
@@ -20,7 +21,7 @@ Every SELECT query opens a result window with a toolbar, a scrollable table, and
 | Remove filters | Clear all active column filters (enabled only when a filter is active) |
 | List Columns | Show column metadata for the result set |
 | Show SQL | Show the original SQL statement that produced this result (SELECT windows only) |
-| Diff (+) | Compare this result against another connection (SELECT windows only — see [ResultSetCompare.md](ResultSetCompare.md)) |
+| Diff (+) | Compare this result against another connection or open result window (SELECT windows only — see [ResultSetCompare.md](ResultSetCompare.md)) |
 
 ---
 
@@ -82,6 +83,7 @@ The **Remove filters** toolbar button lights up.
 ### Apply Filter (dialog)
 
 Right-click a column header → **Apply Filter**.  
+Supported for **text**, **integer**, and **decimal/numeric** columns.  
 Opens a small dialog with:
 
 - **Operator** dropdown — available operators depend on the column data type:
@@ -100,10 +102,17 @@ Opens a small dialog with:
   | `LIKE` | text only |
   | `NOT LIKE` | text only |
 
-- **Filter value** field (or two fields for BETWEEN).
+- **Filter value** field — numeric columns show a numeric-only text field; text columns accept any string.
+- For **BETWEEN**, a second value field appears.
 - **Apply** to activate, **Cancel** to dismiss without change.
 
-Multiple columns can each have an independent filter active at the same time. They are combined with AND logic. The row count in the status bar at the bottom of the window updates to reflect how many rows pass all active filters.
+Numeric columns (INTEGER, SMALLINT, BIGINT, TINYINT, DECIMAL, NUMERIC) use numeric
+comparison internally, so `> 100` correctly excludes `99.5` regardless of how many
+decimal places the stored value has.
+
+Multiple columns can each have an independent filter active at the same time.  
+Filters are combined with AND logic.  
+The row count in the status bar updates to reflect how many rows pass all active filters.
 
 To clear individual column filters: right-click the cell → **Remove filter on Column**.  
 To clear all filters at once: toolbar **Remove filters** button or menu **Options → Remove All filters**.
