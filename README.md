@@ -1,6 +1,52 @@
 # suidev080
 
-Sui 0.75O
+### Sui 0.75S
+---------
+- **Tabbed Results Window** — new `QueryRepTabbedFrame`: dock any query result into a shared tab strip via the ← toolbar button; release back to a free-floating window at any time
+- Tab header shows short title with full title as tooltip; inline → (release) and × (close) buttons per tab
+- Right-click on a tab: **Release me** / **Close**
+- **Pull all free results in** button — pulls every open result window into the tabbed frame in one step
+- **Free us all** button — releases every tab back to its own floating window
+- Closing the tabbed frame disposes all its result sets
+- Preferences → Misc: **Open results in tabbed view** checkbox — auto-routes new SELECT results into the tabbed frame
+- Result Set Compare: tabbed QueryRep windows now appear in the diff picker (were incorrectly excluded)
+- Bug fix (Result Set Compare): `ArrayIndexOutOfBoundsException` when opening the diff picker from a tabbed result — popup now anchored to `mainPanel`
+- Result Set Compare: diff table honours dark mode — default rows use theme colours instead of hardcoded `Color.WHITE`
+- Result Set Compare: zebra striping on the diff table (theme-adaptive)
+- Result Set Compare: diff-coloured rows and legend swatches force black foreground for readability in dark mode
+- SQL Object Tree: JInternalFrame icon removed (was `db.gif`); toolbar button now shows text label "DB tree" instead of icon
+
+### Sui 0.75R
+---------
+- **FlatLaf dark/light themes** selectable directly from **Preferences → Misc** — no `Sui.ini` edit required; FlatLaf Light, Dark, IntelliJ and Darcula registered automatically
+- FlatLaf L&F applied before any Swing component is created — menus, toolbar and decorations fully themed
+- Bug fix: menu bar was rendered in hardcoded gray instead of theme colour
+- Bug fix: syntax highlighter reset all text to `Color.black` on every keystroke — invisible on dark backgrounds; now uses `UIManager` foreground colour
+- Bug fix: `JScrollPane` viewport background not updated on L&F switch — editor area appeared white in dark mode
+- **Query Sheet Overview**: double-click now opens the corresponding tab (was: opened inline name editor)
+- **Query Sheet Overview**: "Rename sheet…" added to the right-click context menu
+- **Query Sheet Overview**: **Clear colors** button — resets all tab background colours to the theme default
+- Bug fix: tab colours no longer saved when they equal the theme default — prevents dark-mode colours persisting on next light-mode startup
+- Bug fix: switching connection from the connection bar inside a Query Box window no longer hides that window behind the main frame
+- **About dialog** redesigned — styled `JDialog` with logo, HTML content, and clickable links
+- Right-click popup: Format SQL, Ext Format SQL and Syntax Validate promoted to top level; remaining edit functions grouped in "Additional Edit functions" submenu
+- `ShowQryBox`: connection bar, Add Schema / Remove Schema buttons for all window types (QueryBox, QuerySheet, SyncSQL)
+- Result Set Compare (`DiffRep`): unified column-roles panel; `batch=YES;` prefix support; Sync SQL opens in ShowQryBox
+
+Sui 0.75Q
+---------
+- **Result Set Compare** row filter buttons: All / Left only / Right only / Differ — instantly hide non-matching rows; filter applies to Export CSV and Open in Query View
+- Result Set Compare: compare two open QueryRep windows directly (in-memory, no SQL re-execution)
+- Result Set Compare: closed/disposed result windows excluded from the diff picker list
+- Result Set Compare: numeric comparison uses `BigDecimal` arithmetic — trailing zeros, different scales and different JDBC types (e.g. DB2 SMALLINT vs BigQuery INT64) no longer produce false diffs
+- Result Set Compare: column headers and legend use plain ASCII (`< COL` / `COL >`) — eliminates garbled characters on Windows terminals
+- **Query Report**: Trim checkbox — strips trailing whitespace from cell values and copied lines
+- Bug fix (Query Report): "Apply Filter" was missing from the column header right-click popup — `pop.add(Filt)` was never called
+- Bug fix (Query Report): Apply Filter blocked for INTEGER/DECIMAL columns with large DB-reported display size (e.g. BigQuery INT64) — length guard removed for non-String columns
+- Preferences → Start Up: restructured into five titled sub-panels (Window layout, Query sheets, Show at startup, SQL Object Tree content, Miscellaneous)
+- Preferences → Export: restructured into three titled sub-panels (General, CSV, Excel XLS)
+
+### Sui 0.75O
 ---------
 - **Connection status bar** — full-width bar between the toolbar and query tabs; light green when connected, grey when not; right-click for a popup of all in-session connections to quickly switch databases
 - Cursor position label (`Ln / Col`) moved to the very bottom of the window — standard IDE convention

@@ -233,3 +233,71 @@ Sorting is performed in-memory on the currently loaded result set. It respects t
 |---|---|
 | Ctrl+T | List Columns |
 | Ctrl+Q | Show SQL statement |
+
+---
+
+## Tabbed Results Window
+
+Sui lets you choose — for each individual result set — whether it lives in its own free-floating window or in a shared **Query Results** tabbed frame. You can move results between the two modes at any time without re-running the query.
+
+### The two modes
+
+| Mode | Description |
+|---|---|
+| **Free-floating** | Default. Each result opens as its own window that can be moved, resized, and minimised independently. |
+| **Tabbed** | The result is hosted as a tab inside the shared *Query Results* frame. Useful when you want several results organised in one place. |
+
+### Opening results in the tabbed frame by default
+
+In **Preferences → Misc**, check **Open results in tabbed view**.
+
+When this preference is on, every new SELECT result is automatically routed into the tabbed frame instead of opening as a standalone window.
+
+### Pulling a free-floating result into the tabbed frame
+
+Every query result toolbar contains a **← (left arrow)** button at the far right.
+
+- Click it to move that result into the tabbed frame.
+- The free-floating window disappears; the result reappears as a new tab.
+- The ← button hides itself once the result is tabbed.
+
+### The Query Results tabbed frame
+
+The tabbed frame opens automatically the first time a result is pulled in (or when auto-routing is on). It behaves like a normal window.
+
+**Tab header** — each tab shows a short title (connection + timestamp, truncated to 35 characters). Hover the title for the full text as a tooltip. Two inline buttons appear on each tab:
+
+| Button | Action |
+|---|---|
+| **→** (right arrow) | Release this result back to a free-floating window |
+| **×** | Close and discard this result |
+
+**Right-click context menu on a tab:**
+
+| Item | Action |
+|---|---|
+| Release me | Send the result back to a free-floating window |
+| Close | Dispose the result |
+
+**Bottom bar buttons:**
+
+| Button | Action |
+|---|---|
+| Pull all free results in | Pull every currently open free-floating result into the tabbed frame in one step |
+| Free us all | Release every tab back to its own free-floating window |
+
+**Closing the tabbed frame** (window close button or Alt+F4) **closes and disposes all tabs**. Results are not released — they are gone. Use *Free us all* first if you want to keep them.
+
+### Releasing a result back to a free-floating window
+
+Use any of these:
+
+1. Click the **→** button in the tab header.
+2. Right-click the tab → **Release me**.
+3. Click **Free us all** (releases every tab at once).
+
+After release the result reappears as a standalone window and its ← button becomes visible again.
+
+### Comparing results across both modes
+
+The **Compare** toolbar button works regardless of mode. Both tabbed and free-floating results appear together in the *Open result windows* list of the comparison picker, so you can diff a tabbed result against a free-floating one without changing either window's mode.

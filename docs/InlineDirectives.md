@@ -1,4 +1,4 @@
-# Sui Inline Directives — `#URL=` and `#SET=`
+# Sui Inline Directives
 
 Inline directives are special non-SQL statements that can be embedded in a Sui
 query script. They begin with `#` and are processed by the `nonSQL` class before
@@ -146,6 +146,71 @@ run), the double `&&` is reduced to a single `&ENV` and the user **is** prompted
 
 > **Note:** The variable substitution character can be changed from `&` via the
 > `SUI.VARSUBS.CHAR` application property.
+
+---
+
+## `BATCH=YES` — Suppress Row-Count Confirmation
+
+### Purpose
+
+Runs all DML statements in the script (INSERT, UPDATE, DELETE) without showing
+the "N rows affected — commit?" confirmation dialog after each one.  
+Useful for generated scripts that contain many statements (e.g. a full table
+load or a diff-generated sync script).
+
+### Syntax
+
+```
+BATCH=YES;
+```
+
+`BATCH=YES` must appear as the **first statement** in the script (before any
+SQL). It is case-insensitive. The trailing delimiter (`;` by default) is
+required.
+
+### Behaviour
+
+| Without `BATCH=YES` | With `BATCH=YES` |
+|---|---|
+| Each UPDATE/DELETE/INSERT shows a dialog — "N rows affected. Commit?" | All statements execute without confirmation. |
+| Script pauses after every DML statement | Script runs to completion without interruption. |
+| User can commit or roll back each statement individually | All changes are committed automatically. |
+
+### Example
+
+```sql
+BATCH=YES;
+
+UPDATE orders SET status = 'CLOSED' WHERE order_date < '2024-01-01';
+DELETE FROM audit_log WHERE created < '2023-01-01';
+INSERT INTO archive SELECT * FROM old_orders;
+```
+
+> **Tip:** The Result Set Compare "Sync SQL" feature automatically prepends
+> `BATCH=YES;` to the generated sync script so you can run it without
+> clicking through a confirmation for every row.
+
+---
+
+## `PROFI=` — Profile-based Connection Switch
+
+### Purpose
+
+Switches the active JDBC connection to a named profile stored in `SuiConnProp.pro`
+(the Connection Manager). This is an alternative to `#URL=` when you want to
+reference a saved connection by its alias rather than spelling out the full URL.
+
+### Syntax
+
+```
+PROFI= <alias>
+```
+
+| Part | Description |
+|---|---|
+| `PROFI` | Keyword (case-insensitive). |
+| `=` | Separator. |
+| `<alias>` | The connection alias exactly as defined in the Connection Manager. |
 
 ---
 
