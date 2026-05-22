@@ -1,5 +1,19 @@
 # suidev080
 
+### Sui 0.75T
+---------
+- **Query editor no-wrap fix** — when `SUI.WRAP=N`, typing on one row no longer causes other rows to re-flow ("wrap cascade"); `NonWrappingTextPane` now uses a custom `ViewFactory` with a `ParagraphView.layout()` forced to `Short.MAX_VALUE` width
+- **Right-click popup in query window** — `QryPop` now opens from anywhere in the visible editor area, including the empty area to the right of narrow non-wrapping content (extra `MouseListener` on the scroll-pane viewport)
+- **Result Set Compare — named presets** — save column roles (Key/Compare/Ignore), Trim and Case settings per preset to `DiffPresets.pro`; new **Presets ▾** menu with Save / Apply / Delete
+- **QueryRep window title** now shows the connection **alias** instead of the full JDBC URL — shorter and easier to identify, especially inside the tabbed results frame
+- Bug fix: visual header / max-rows indicator updated correctly when the max-rows limit is reached, including when switching between tabs
+- Bug fix: main window **resize** behaviour restored
+- Bug fix: window **restore** (from saved layout / minimised state) reliably restores position and size
+- Bug fix: Copy-from-result-set actions corrected; assorted FlatLaf Look-and-Feel rendering glitches resolved
+- Small persistence/restore fixes in `Propm`, `PropmAll`, `PropmLogin`
+- **New documentation**: `docs/AdditionalEditFunctions.md` — full reference for every entry in the QryPop "Additional Edit functions" submenu (Format SQL, Syntax Validate, Add/Remove Schema, Trim, Indent/Unindent, Toggle Comment, Build IN List, Text→Insert Statement, Paren Matching, …)
+- Documentation update: `docs/ResultSetCompare.md` — new section on the named-preset workflow
+
 ### Sui 0.75S
 ---------
 - **Tabbed Results Window** — new `QueryRepTabbedFrame`: dock any query result into a shared tab strip via the ← toolbar button; release back to a free-floating window at any time
