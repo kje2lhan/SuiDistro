@@ -1,5 +1,17 @@
 # suidev080
 
+### Sui 0.75U
+---------
+- **Cross-Connection Broadcast** — run one SQL query against multiple connections in one step; tick target connections (from session history), set an optional per-connection schema override, and get one result window per target; vendor-aware `SET SCHEMA` injection (DB2, Oracle, PostgreSQL, SQL Server, MySQL/MariaDB); named target groups saved/loaded/deleted to `BroadcastGroups.pro`; accessible from main menu and right-click popup
+- **Performance — CSV export** is dramatically faster on large result sets; `ExpCSV` now builds rows with `StringBuilder` instead of repeated `String.concat` (was O(n²) per row)
+- **Performance — Excel export** (`ExpXLS` and `ExpXLSRS`) — cell styles and fonts are now configured once instead of being mutated on every cell write; column auto-sizing is tracked **before** rows are written so it actually works on SXSSF (the previous post-write tracking only saw the last 100 rows of the streaming window); numeric parsing now falls back from `Long` to `Double` so `BIGINT` columns are no longer silently written as strings
+- **Performance — JSON formatter** uses `StringBuilder` instead of `ret += c` per character (large JSON payloads no longer trigger heavy GC pressure)
+- **Performance — XML formatter** uses a local `StringBuilder` instead of static `String` accumulation; also re-entrant now (no shared static state between calls)
+- **F7/F8 row navigation in transpose window** — from any transpose (vertical column-list) window, press F8 to move to the next row's transpose or F7 for the previous row; works in both free-floating and tabbed modes; the old transpose is replaced so the screen stays clean
+- **Transpose window focus fix** — the transpose window now captures keyboard focus immediately on open so F7/F8 fires on the first keypress
+- **F8 crash fix** — `IllegalArgumentException: Row index out of range` no longer occurs when pressing F8 in the transpose window's row-header column with no row selected
+- Version bump `0.75T` → `0.75U`
+
 ### Sui 0.75T
 ---------
 - **Query editor no-wrap fix** — when `SUI.WRAP=N`, typing on one row no longer causes other rows to re-flow ("wrap cascade"); `NonWrappingTextPane` now uses a custom `ViewFactory` with a `ParagraphView.layout()` forced to `Short.MAX_VALUE` width

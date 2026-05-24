@@ -199,8 +199,76 @@ Writes the currently visible rows (post-filter) with the current column order to
 
 ### Excel (XLS)
 
-Toolbar **Export XLS** or menu **File → Exp XLS**.  
-Requires the Apache POI library. Exports the table including the original SQL statement on a second sheet.
+There are two separate Excel export paths depending on whether you want the full result or just a selection.
+
+#### Full result export
+
+**Toolbar excel icon** or **Options → Run XLS Query** (Ctrl+T from the main query window runs the current query directly to Excel without opening a result window first).
+
+- Exports every visible row (post-filter) and every column in the current display order.
+- Writes an `.xlsx` file to the default export path (configured as `SUI.DEFSUIEPATH` in Preferences).
+- The file name is auto-generated from the current time: `tHHMMSS.xlsx`.
+- The workbook contains two sheets:
+  - **Sui-Export** — the data, with a bold header row and numeric types right-aligned.
+  - **Sui-Meta** — provenance metadata (see below).
+- Numeric columns (`INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `DECIMAL`) are written as proper Excel numbers, not text, so arithmetic and sorting work natively in Excel.
+  - Integer format is controlled by the `SUI.XLS.INTFMT` property (default `0`).
+  - Decimal format is controlled by the `SUI.XLS.DECFMT` property (default `# ##0.000`).
+- The cell font is controlled by the `SUI.XLS.FONT` property (default `Courier`).
+- Column widths are auto-sized (for results up to 50 columns wide).
+- If `SUI.LAUNCHXLS=Y` is set in Preferences, the file is opened immediately after creation using the command in `SUI.XLSLAUNCHCMD` (default `cmd /c start`). Otherwise, the status bar shows the generated file name.
+
+**Requires the Apache POI library** (`poi-ooxml-*.jar`) on the classpath. If POI is missing, an error dialog appears.
+
+#### Selection export (XLS sel)
+
+Toolbar **XLS sel** button.
+
+Exports only the rows and columns you have selected in the table — not the full result set.
+
+**How to use:**
+
+1. Click a cell, then drag to select a rectangle of rows and columns. Or hold **Ctrl** and click individual rows to build a non-contiguous selection. Or click a column header to select all rows in that column.
+2. Click **XLS sel**.
+3. The file is written to the same auto-named `.xlsx` in the default export path.
+
+**Behaviour differences from the full export:**
+
+| | Full export | Selection export |
+|---|---|---|
+| Rows | All visible (post-filter) | Only selected rows |
+| Columns | All columns | Only selected columns |
+| Header row | Always included | Included only when **Hdr** checkbox is ticked |
+| Meta sheet contents | Driver, URL, user, SQL, row count, result-set status | Created-at timestamp and selected-row count only |
+| Status bar message | `XLSX file … skapad` | `XLSX selection export: …` |
+
+The **Hdr** checkbox (next to the **Trim** checkbox on the toolbar) controls whether the first row of the selection export contains the column names. It has no effect on the full export (which always writes a header row).
+
+If no cells are selected when **XLS sel** is clicked, an information dialog reminds you to select rows/columns first.
+
+#### Sui-Meta sheet contents (full export)
+
+| Row | Content |
+|---|---|
+| 0 | Spreadsheet created by / Sui 0.75x |
+| 1 | Created at / timestamp |
+| 2 | Driver / JDBC driver class name |
+| 3 | URL / JDBC connection URL |
+| 4 | Userid / database user |
+| 5 | SQL-Stmt / the original SQL statement (truncated at 32 000 characters) |
+| 6 | Result set status / `full result set` or `partial result set` |
+| 7 | Report rows / row count |
+
+#### Preferences properties for Excel
+
+| Property | Default | Description |
+|---|---|---|
+| `SUI.XLS.FONT` | `Courier` | Cell font for data rows |
+| `SUI.XLS.INTFMT` | `0` | Excel number format for integer columns |
+| `SUI.XLS.DECFMT` | `# ##0.000` | Excel number format for decimal columns |
+| `SUI.DEFSUIEPATH` | (system) | Directory where `.xlsx` files are written |
+| `SUI.LAUNCHXLS` | `N` | Set to `Y` to open Excel automatically after export |
+| `SUI.XLSLAUNCHCMD` | `cmd /c start` | OS command used to launch Excel when `SUI.LAUNCHXLS=Y` |
 
 ---
 
@@ -297,6 +365,26 @@ Use any of these:
 3. Click **Free us all** (releases every tab at once).
 
 After release the result reappears as a standalone window and its ← button becomes visible again.
+
+### Child windows inherit the parent's mode
+
+Several actions open a secondary result window *derived from* the current result:
+
+| Action | Window opened |
+|---|---|
+| Double-click a row (or Ctrl+L / **Transpose Row**) | Transpose — column names in one column, cell values in the other |
+| **F8** in a Transpose window | Transpose of the *next* row in the parent result |
+| **F7** in a Transpose window | Transpose of the *previous* row in the parent result |
+| Right-click → **Transpose/compare on value** | Side-by-side comparison of all rows sharing the clicked cell's value |
+| Right-click → **Transpose/compare selected** | Side-by-side comparison of all rows marked *Sel* |
+| Toolbar → **List Columns** | Column metadata table (name, type, length, decimals, nullability) |
+
+**Behaviour:**
+
+- If the parent result is **free-floating**, all secondary windows open as free-floating windows, exactly as they did before.
+- If the parent result is **tabbed**, all secondary windows are routed directly into the tabbed frame without ever appearing as a separate window first.
+
+This means that when you are working inside the tabbed frame, transpose views, row comparisons, and the column list all appear as new tabs rather than popup windows scattered on the desktop. You can then use the tab's **→** button to release any of them back to a free-floating window if you want to position it separately.
 
 ### Comparing results across both modes
 
