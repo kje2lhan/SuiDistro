@@ -58,12 +58,17 @@ Right-click any cell in the data area for:
 |---|---|
 | Transpose Row | Open the selected row as a two-column list (column name / value) |
 | Show cell data | Open the full cell content in a resizable text window with format options |
+| Find | Open the Find bar for in-table text search |
+| Go to column | Open the searchable column picker and jump/select that column |
 | Filter on value | Immediately filter to rows where this column equals the selected cell value |
 | Remove filter on Column | Clear the filter on this column only |
 | Select row | Extend the selection to the entire row |
 | Select for transpose | Mark this row for a multi-row transpose comparison |
 | Transpose/compare selected | Transpose all rows marked *Sel* into a side-by-side comparison window |
 | Transpose/compare on value | Transpose all rows whose value in the selected column matches the current cell |
+| Highlight row differences from selected cell | Compare against the selected cell and highlight non-matching values in the same row |
+| Highlight column differences from selected cell | Compare against the selected cell and highlight non-matching values in the same column |
+| Clear diff highlight | Remove active row/column diff highlighting |
 | Copy selected data | Copy selected cells to the clipboard |
 | Copy WHERE clause from row | Build a `WHERE col = 'value' AND …` clause from the entire row and copy it to the clipboard |
 | Hide Row | Remove this row from the view (does not affect the database) |
@@ -286,8 +291,16 @@ Sorting is performed in-memory on the currently loaded result set. It respects t
 
 | Key | Action |
 |---|---|
+| Ctrl+Shift+V | Transpose/compare on value |
+| Ctrl+D | Show cell data |
+| Ctrl+F | Open Find bar |
+| Ctrl+Shift+F | Filter on value (from selected cell) |
+| Ctrl+G | Go to column |
 | Ctrl+L | Transpose selected row |
 | Ctrl+C | Copy selected cells |
+| Ctrl+H | Highlight row differences from selected cell |
+| Ctrl+Shift+H | Highlight column differences from selected cell |
+| Ctrl+R | Clear diff highlight |
 | Ctrl+E | Export to CSV |
 | Ctrl+M | Query Monitor |
 | Ctrl+P | Print |
