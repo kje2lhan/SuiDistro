@@ -174,20 +174,89 @@ A key/value table backed by `SuiConnPref.pro`. These properties are passed direc
 
 **Key format:** `url-prefix.property-name`
 
-For example, to set `sslmode=require` for all PostgreSQL connections:
+When Sui opens a connection, it scans every entry in this table and includes all entries
+whose key prefix matches the beginning of the target JDBC URL. This means you can
+define properties at two levels of specificity: **specific** (targeting one exact
+connection URL) or **generic** (targeting all connections that share the same driver
+prefix).
+
+---
+
+### Specific properties — one connection only
+
+Prefix the key with the full JDBC URL of the target connection, then append a dot and
+the property name. Only connections whose URL starts with that full string will pick up
+the property.
+
+**Example — set the default schema to `kjell` for one particular DB2 database:**
 
 ```
-jdbc:postgresql.sslmode = require
+jdbc:db2://localhost:50000/sample.currentSchema = kjell
 ```
 
-When Sui connects to `jdbc:postgresql://myhost/mydb`, it matches all keys that start
-with `jdbc:postgresql` and passes the trailing property names and values to the driver.
+When Sui connects to `jdbc:db2://localhost:50000/sample`, the prefix
+`jdbc:db2://localhost:50000/sample` matches exactly, so `currentSchema=kjell` is passed
+to the driver. A different DB2 database — say `jdbc:db2://prodserver:50000/finance` —
+does *not* match this prefix and therefore does not receive the property.
 
-Use this for driver-specific settings that cannot be embedded in the URL, such as:
-- SSL/TLS options
+This is useful for settings that should only apply to one specific database instance,
+such as a default schema, a particular isolation level, or a connection-level time zone.
+
+---
+
+### Generic properties — all connections for a driver
+
+Prefix the key with only the `jdbc:<subprotocol>` part of the URL (no host, port, or
+database). Every connection whose URL begins with that short prefix will receive the
+property.
+
+**Example — apply a timestamp format preference to all DB2 connections:**
+
+```
+jdbc:db2.timestampFormat = 1
+```
+
+When Sui connects to *any* `jdbc:db2://…` URL, the prefix `jdbc:db2` matches, so
+`timestampFormat=1` is injected for every DB2 connection regardless of host or database.
+
+Other generic examples:
+
+```
+jdbc:postgresql.sslmode        = require
+jdbc:mariadb.connectTimeout    = 10000
+```
+
+---
+
+### Precedence — most specific prefix wins
+
+When Sui evaluates the table, it finds *all* entries whose prefix matches the target
+URL, then applies only the **longest matching prefix** for each property name. A more
+specific entry therefore always silently overrides a more generic one for the same
+property, regardless of the order the rows appear in the table.
+
+**Example:** both of the following match `jdbc:db2://localhost:50000/sample`:
+
+```
+jdbc:db2.currentSchema                       = PUBLIC
+jdbc:db2://localhost:50000/sample.currentSchema = kjell
+```
+
+Sui sets `currentSchema=kjell` because the second prefix is longer. The generic row
+still applies to all *other* DB2 connections that do not have a specific override.
+
+---
+
+Use JDBC Properties for driver-specific settings that cannot be embedded in the URL,
+such as:
+- Default schema or catalog (`currentSchema`, `searchPath`, …)
+- SSL/TLS options (`sslmode`, `sslcert`, …)
 - Connection timeouts
 - Character set overrides
 - BigQuery OAuth settings
+- Timestamp and date format preferences
+
+---
 
 ### Buttons
 

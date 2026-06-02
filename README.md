@@ -2,14 +2,15 @@
 
 ### Sui 0.75V
 ---------
-- Query Result window: **diff highlight** — Ctrl+H highlights row differences, Ctrl+Shift+H highlights column differences, Ctrl+R clears; colours adapt to dark/light theme
+- Query Result window: **diff highlight** — Ctrl+H highlights row differences across all selected rows (anchor = first selected column), Ctrl+Shift+H highlights column differences across all selected columns (anchor = first selected row), Ctrl+R clears; colours adapt to dark/light theme
 - Query Result window: **Transpose/compare on value** (Ctrl+Shift+V) — transposes all rows where the selected column matches the clicked cell value
 - Query Result window: **F3** closes the current window or tab in both free-floating and tabbed mode
+- Query Result window: **Copy selected data** now includes column headers as first row when **Hdr** is checked (consistent with CSV and XLS export)
 - Query Result window: keyboard shortcuts (Ctrl+D, Ctrl+F, Ctrl+G, Ctrl+Shift+F, Ctrl+Shift+V, Ctrl+H, Ctrl+Shift+H, Ctrl+R) now appear as accelerators in the right-click context menu
 - Tabbed results: active tab label shown in bold; row-limit warning tabs remain bold regardless
 - **Replace Schema…** added to the right-click editor menu and to the ShowQryBox toolbar — replaces one schema qualifier with another across all table references; old schema auto-detected from the first qualified reference in the selection
-- Broadcast: schema override now rewrites table references in the SQL directly via `SqlDialectConverter.applySchema()` instead of injecting `SET SCHEMA` DDL — works for all database types, no execute permission required
-- Broadcast: fixed `#URL=` parsing bug — preceding `--` comment caused `nonSQL` to never set `TMPURL`; comment moved to trailing remark on the `#URL=` line
+- Broadcast: schema override uses the same regex logic as the editor's Add Schema / Replace Schema — detects whether SQL has existing schema qualifiers and either adds or replaces accordingly; no JSQLParser dependency, no parse failures on vendor-specific SQL
+- Broadcast: fixed critical bug — statement delimiter was placed after the `-- broadcast:` comment; `RemComm` stripped it with the comment, merging `#URL=` and the SQL into one token so RunIt never executed the query; delimiter now placed immediately after the URL
 - Bug fix (`#URL=`): `TMPURL` cleared immediately after connection switch so subsequent statements reuse the switched connection instead of reconnecting on every statement
 
 ### Sui 0.75U

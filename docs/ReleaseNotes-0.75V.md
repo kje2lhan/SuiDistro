@@ -10,8 +10,8 @@
 
 | Area | Type | Description |
 |---|---|---|
-| Query Result window | New feature | **Diff highlight — row mode** (Ctrl+H): highlights every cell in the selected row whose value differs from the selected cell |
-| Query Result window | New feature | **Diff highlight — column mode** (Ctrl+Shift+H): highlights every cell in the selected column whose value differs from the selected cell |
+| Query Result window | New feature | **Diff highlight — row mode** (Ctrl+H): select one or more rows; every cell in those rows whose value differs from the anchor column is highlighted |
+| Query Result window | New feature | **Diff highlight — column mode** (Ctrl+Shift+H): select one or more columns; every cell in those columns whose value differs from the anchor row is highlighted |
 | Query Result window | New feature | **Clear diff highlight** (Ctrl+R): removes all diff highlighting |
 | Query Result window | New feature | Diff highlight respects dark/light theme — deep red background in dark themes, light pink in light themes |
 | Query Result window | New feature | **Transpose/compare on value** (Ctrl+Shift+V): transposes all rows where the selected column has the same value as the clicked cell |
@@ -19,9 +19,10 @@
 | Query Result window | Enhancement | Keyboard shortcuts added to right-click menu: Ctrl+D (Show cell data), Ctrl+Shift+F (Filter on value), Ctrl+G (Go to column), Ctrl+F (Find) |
 | Query Result window | Enhancement | Right-click menu items "Find" and "Go to column" added to the context menu with accelerators |
 | Query Result window | Bug fix | `ColorRenderer` replaced by `DiffHighlightRenderer` throughout — all filter-apply paths now correctly restore the renderer |
+| Query Result window | Enhancement | **Copy selected data** now includes column headers as first row when **Hdr** is checked (consistent with CSV and XLS export) |
 | Tabbed results | Enhancement | Active tab label shown in **bold**; row-limit warning tabs remain bold regardless of selection |
-| Broadcast | Bug fix | Schema override now rewrites table references in the SQL via `SqlDialectConverter.applySchema()` instead of injecting a `SET SCHEMA` DDL statement — avoids permission errors and works for all database types |
-| Broadcast | Bug fix | `#URL=` directive comment moved to a trailing comment on the same line — fixes a parsing bug where a preceding `--` comment caused `nonSQL` to never fire and `TMPURL` to never be set |
+| Broadcast | Bug fix | Schema rewrite uses same regex logic as editor Add Schema / Replace Schema — detects whether SQL has existing qualifiers and either adds or replaces accordingly; no JSQLParser dependency |
+| Broadcast | Bug fix | Statement delimiter moved to before the `--` broadcast comment — `RemComm` was stripping the delimiter with the comment text, merging the `#URL=` token and the SQL so RunIt never executed the query |
 | Broadcast | Enhancement | Checkbox label updated to "Apply per-connection schema qualifier to table references" to accurately reflect the new behaviour |
 | Schema management | New feature | **Replace Schema…** added to the right-click editor menu (Additional Edit Functions → Replace Schema…) and to the ShowQryBox toolbar |
 | Schema management | Enhancement | Old schema name pre-filled from the first qualified table reference detected in the selection |
@@ -38,12 +39,12 @@
 
 A new cell-level diff highlighting mode makes it easy to spot outliers in a row or column.
 
-Select any cell, then use one of:
+Select one or more cells, then use one of:
 
 | Action | Shortcut | Behaviour |
 |---|---|---|
-| Highlight row differences | Ctrl+H | All cells in the same row whose value ≠ selected cell are highlighted |
-| Highlight column differences | Ctrl+Shift+H | All cells in the same column whose value ≠ selected cell are highlighted |
+| Highlight row differences | Ctrl+H | Select one or more rows (any columns). The **first selected column** is the anchor. Every other cell in each selected row is highlighted if its value differs from the anchor column's value in that same row. |
+| Highlight column differences | Ctrl+Shift+H | Select one or more columns (any rows). The **first selected row** is the anchor. Every other cell in each selected column is highlighted if its value differs from the anchor row's value in that same column. |
 | Clear diff highlight | Ctrl+R | Removes all highlighting |
 
 The same three actions are also available from the right-click context menu.
@@ -56,7 +57,9 @@ Theme detection uses the luminance of `Panel.background` (threshold 0.5).
 
 The existing `ColorRenderer` has been subclassed into `DiffHighlightRenderer` which is
 installed on every column during all table-build and filter-apply paths, replacing the
-previous `ColorRenderer` assignments.
+previous `ColorRenderer` assignments. The anchor value is looked up per-cell at render
+time via `table.getValueAt()` so multi-row and multi-column selections all compare
+against the correct reference value.
 
 ---
 
@@ -103,23 +106,46 @@ always bold so the orange warning colour remains visually prominent.
 
 ---
 
-### Broadcast — Schema Rewrite Instead of SET SCHEMA (`Broadcast.java`)
+### Copy Selected Data — Column Headers (`QueryRep.java`)
 
-The previous approach injected a vendor-specific `SET SCHEMA` / `USE` / `SET search_path`
-DDL statement before each SQL in the broadcast script. This required execute permission
-on that statement and did not work for all database types (e.g. BigQuery, SQLite).
+When the **Hdr** checkbox in the toolbar is ticked, the **Copy selected data** action
+(both right-click context menu and the action popup) now prepends a header row containing
+the selected column names, space-separated, before the data rows. This matches the
+existing behaviour of the CSV and XLS export buttons.
 
-The new approach calls `SqlDialectConverter.applySchema(sql, schema)` to rewrite the SQL
-itself: unqualified table references after `FROM`, `JOIN`, `INTO`, `UPDATE`, `TABLE` gain
-the schema prefix; existing qualifiers are replaced. No DDL is ever injected.
+---
 
-Additionally, the `-- broadcast: alias` comment was previously emitted on its own line
-before `#URL=`. The `nonSQL` parser splits by statement delimiter and then splits by `=`
-to detect `#URL`; a leading `--` comment merged into the same token caused the split to
-produce `-- broadcast`, which starts with `-` not `#`, so `nonSQL` never triggered and
-`TMPURL` was never set. The comment is now placed as a trailing remark on the `#URL=` line
-itself, which is safe because `nonSQL` splits `arr[1]` (the URL part) by whitespace and
-takes only `keyw[0]` — trailing text is ignored.
+### Broadcast — Schema Rewrite (`Broadcast.java`)
+
+The schema application logic has been replaced with the same regex approach used by
+**Add Schema** and **Replace Schema** in the SQL editor:
+
+- If the SQL already contains qualified references (`schema.table` after
+  `FROM`/`JOIN`/`INTO`/`UPDATE`/`TABLE`): all existing schema qualifiers are **replaced**
+  with the per-connection schema.
+- If the SQL has no qualified references: the schema is **added** as a prefix to every
+  unqualified table name.
+
+This is purely string/regex based — no JSQLParser dependency, no parse failures on
+complex or vendor-specific SQL.
+
+**Bug fix — delimiter ordering:** The generated `#URL=` line previously placed the
+statement delimiter after the `-- broadcast:` comment:
+```
+#URL=jdbc:...  -- broadcast: ALIAS;
+```
+`RunSql` passes the script through `RemComm` (comment stripper) before handing it to
+`RunIt`. `RemComm` strips from `--` to end-of-line, which deleted the `;` delimiter.
+`SqlSplit` then merged the `#URL=` token and the following SQL into one statement; that
+combined statement was detected as a `#`-directive and processed by `nonSQL` — the SQL
+was never executed.
+
+The delimiter is now placed immediately after the URL, before the comment:
+```
+#URL=jdbc:...;  -- broadcast: ALIAS
+```
+`RemComm` strips the `--` tail but leaves the `;`, so `SqlSplit` correctly produces
+two separate tokens: the `#URL=` directive and the schema-adjusted SQL statement.
 
 ---
 
