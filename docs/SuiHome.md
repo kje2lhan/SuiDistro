@@ -25,7 +25,7 @@ main(args)
 `SuiHome` is determined by working through four candidates in order, stopping at the first one that succeeds:
 
 ```
-1. Sui.ini  →  SuiHome=<folder>;  (if the folder exists, or &current_path is used)
+1. Sui.ini  →  SuiHome=<folder>[;]  (if the folder exists, or &current_path/&current_folder is used)
 2. <user.home>\AppData\Sui\        (if the folder exists)
 3. <user.dir>\                     (current directory, if Sui can write to it)
 4. <user.home>\AppData\Sui\        (fallback — folder is created if missing)
@@ -39,14 +39,17 @@ Sui reads `Sui.ini` from the current working directory. The file is scanned line
 
 **Syntax:**
 ```
-SuiHome=<folder>;
+SuiHome=<folder>[;]
 ```
+
+The trailing semicolon is **optional** — both `SuiHome=C:\SuiData;` and `SuiHome=C:\SuiData` are accepted. When a semicolon is present, any text after it is ignored (so `SuiHome=C:\SuiData; # comment` still works). The value is trimmed of leading/trailing whitespace before use.
 
 **Symbolic tokens** that can be embedded in `<folder>`:
 
 | Token | Resolved to |
 |---|---|
 | `&current_path` | The directory Sui was started from (`user.dir`). **Highest-priority token** — resolves unconditionally without a directory-existence check. Use this to keep all Sui config files alongside the Sui jar / launch script. |
+| `&current_folder` | Alias of `&current_path` — identical behaviour. |
 | `&homedrive` | `HomeDrive` (drive letter, e.g. `C`) |
 | `&user.name` | Java system property `user.name` |
 | `&user.home` | Java system property `user.home` |
@@ -54,12 +57,13 @@ SuiHome=<folder>;
 **Examples:**
 ```
 SuiHome=&current_path;
-SuiHome=C:\SuiData;
+SuiHome=&current_folder              (no trailing semicolon — also accepted)
+SuiHome=C:\SuiData
 SuiHome=&homedrive:\Users\&user.name\SuiData;
 SuiHome=&user.home\AppData\Sui;
 ```
 
-When `SuiHome=&current_path;` is used, the path is set to the startup directory immediately — no `File.isDirectory()` check is performed, because the current directory always exists. For all other values, after token substitution the path is tested with `File.isDirectory()`. If the folder exists, `Folder` is set to that path and steps 2–4 are skipped. If the folder does not exist, `Folder` remains `null` and the next step is tried.
+When `SuiHome=&current_path` (or `&current_folder`) is used, the path is set to the startup directory immediately — no `File.isDirectory()` check is performed, because the current directory always exists. For all other values, after token substitution the path is tested with `File.isDirectory()`. If the folder exists, `Folder` is set to that path and steps 2–4 are skipped. If the folder does not exist, `Folder` remains `null` and the next step is tried.
 
 If `Sui.ini` is missing or cannot be read, the whole block is caught and `Folder` stays `null`.
 
@@ -152,7 +156,8 @@ main()
 
 Sui constructor
   ├─ Read Sui.ini
-  │     └─ SuiHome=...;  → expand tokens → folder exists?  → Folder = path
+  │     └─ SuiHome=...[;]  → expand tokens → folder exists?  → Folder = path
+  │                          (semicolon optional)
   │
   ├─ Folder set?
   │     yes → SuiHome = Folder + "\"

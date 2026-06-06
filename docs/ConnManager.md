@@ -267,6 +267,193 @@ such as:
 
 ---
 
+## DB2 — Common JDBC Properties
+
+The IBM DB2 JDBC driver (`com.ibm.db2.jcc.DB2Driver`) accepts a long list of
+connection properties that influence statement preparation, error reporting,
+timestamp behaviour, and metadata semantics. The most useful ones for everyday
+Sui use are listed below. All of them are set the same way: add a row in the
+**JDBC Properties** tab with key `jdbc:db2.<propertyName>` (generic — applies to
+every DB2 connection) or `jdbc:db2://host:port/db.<propertyName>` (specific —
+applies to one URL only).
+
+### Property reference
+
+| Property | Typical value | Effect |
+|---|---|---|
+| `clientProgramName` | `Sui` or `Sui-<user>` | Free-form string (max 255 bytes) that DB2 records in `SYSIBMADM.MON_CURRENT_SQL` / `WLM_GET_WORKLOAD_OCCURRENCES` and shows in monitoring tools such as Data Server Manager. Lets a DBA see *which* tool is running a query, not just the OS user. |
+| `deferPrepare` | `true` (default) / `false` | When `true`, `PreparedStatement.prepareStatement()` does **not** send a PREPARE to the server immediately; the PREPARE is folded into the first EXECUTE for one less network round-trip. Set to `false` when you want the PREPARE error reported at prepare time (e.g. when running ad-hoc SQL through Sui and you want syntax errors flagged before the row fetch starts). |
+| `retrieveMessagesFromServerOnGetMessage` | `true` (recommended) / `false` (default) | Controls whether `SQLException.getMessage()` returns the full DB2 server-side message text (including substitution tokens and SQLCODE description) or just the short token form. **Strongly recommended to set to `true`** — without it, Sui will display cryptic messages like `DB2 SQL Error: SQLCODE=-204, SQLSTATE=42704, SQLERRMC=KJELL.NOSUCHTABLE` instead of the human-readable explanation. |
+| `timestampFormat` | `0` (default) / `1` | When `1`, `ResultSet.getString()` on a TIMESTAMP column returns the JDBC-spec form `yyyy-mm-dd hh:mm:ss[.fffffffff]` instead of the DB2 native form `yyyy-mm-dd-hh.mm.ss.ffffff`. Set to `1` if you copy/paste timestamps from the result grid into other tools that expect the standard format. |
+| `timestampPrecisionReporting` | `0` (default) / `1` | When `1`, `ResultSetMetaData.getPrecision()` and `getColumnDisplaySize()` report **26** for a TIMESTAMP(6) column (matching the textual width including punctuation) instead of the raw fractional-seconds precision (`6`). Affects how Sui sizes the TIMESTAMP columns in the result grid. |
+| `useJDBC4ColumnNameAndLabelSemantics` | `1` (default) / `2` | Controls what `ResultSetMetaData.getColumnName()` and `getColumnLabel()` return. Value `1` follows the JDBC 4.0 spec: `getColumnName()` returns the underlying *column name* and `getColumnLabel()` returns the **AS** alias. Value `2` reverts to the older DB2 behaviour where both methods return the AS alias. Set to `2` if you have legacy reports that broke after upgrading the driver. |
+
+### Examples
+
+Generic — apply to every DB2 connection:
+
+```
+jdbc:db2.clientProgramName                      = Sui
+jdbc:db2.deferPrepare                           = false
+jdbc:db2.retrieveMessagesFromServerOnGetMessage = true
+jdbc:db2.timestampFormat                        = 1
+jdbc:db2.timestampPrecisionReporting            = 1
+jdbc:db2.useJDBC4ColumnNameAndLabelSemantics    = 1
+```
+
+Specific — only the production database gets the marker name:
+
+```
+jdbc:db2://prod.example.com:50000/PAYROLL.clientProgramName = Sui-Prod
+```
+
+> **Tip:** `retrieveMessagesFromServerOnGetMessage=true` is the single most useful
+> setting — it transforms otherwise opaque DB2 error messages into readable text
+> in Sui's status bar and exception popups. Add it once as a generic
+> `jdbc:db2.` row and forget about it.
+
+---
+
+## DB2 — SSL / TLS Setup
+
+DB2 supports SSL/TLS for the JDBC client–server connection. Sui drives this
+through the same **JDBC Properties** table — no Java command-line flags are
+required.
+
+### Step 1 — Server listens on an SSL port
+
+The DBA enables SSL on the DB2 server and exposes a dedicated SSL port (commonly
+**50001**, distinct from the cleartext port **50000**). Verify the port with the
+DBA before continuing.
+
+### Step 2 — Add the SSL JDBC properties
+
+Add the following rows to the **JDBC Properties** tab. The minimum set for a
+trusted-CA setup is just two properties:
+
+```
+jdbc:db2.sslConnection      = true
+jdbc:db2.sslTrustStoreType  = Windows-ROOT
+```
+
+| Property | Value | Effect |
+|---|---|---|
+| `sslConnection` | `true` | Tells the JCC driver to negotiate TLS on the socket. Without this the driver opens a cleartext connection regardless of which port you point it at. |
+| `sslTrustStoreType` | `Windows-ROOT` | Uses the **Windows certificate store** (the same trust list as Edge / IE / Chrome) as the JDBC trust store. The Java runtime then trusts every CA root the OS trusts — no manual `keytool` import needed when your DBA's server certificate chains up to a public or enterprise CA already installed in Windows. |
+| `sslTrustStoreLocation` | path to `.jks` / `.p12` | *Optional.* Use **only** if you do **not** use `Windows-ROOT` and want a private Java keystore instead. |
+| `sslTrustStorePassword` | keystore password | *Optional.* Required only with `sslTrustStoreLocation`. The `Windows-ROOT` store is read-only and needs no password. |
+| `sslVersion` | `TLSv1.2` / `TLSv1.3` | *Optional.* Force a specific TLS version. The driver negotiates the highest mutually supported version by default, so this is rarely needed. |
+
+### Step 3 — Point the URL at the SSL port
+
+Update the connection's **URL** (or the Server / Port fields, which auto-build the
+URL) so the port matches the SSL listener — e.g.:
+
+```
+jdbc:db2://prod.example.com:50001/PAYROLL
+```
+
+### Step 4 — Test
+
+Click **Test Connection** on the Connection tab. A green response confirms the
+TLS handshake completed and the credentials were accepted.
+
+### Why `Windows-ROOT`?
+
+`sslTrustStoreType=Windows-ROOT` is the path of least resistance on a Windows
+workstation:
+
+- **No keystore file to manage.** You don't have to copy `.cer` files around,
+  run `keytool -import`, or remember a keystore password.
+- **Picks up enterprise CA pushes automatically.** When your IT department
+  installs a new internal CA via Group Policy, JDBC trusts it immediately
+  without any change to Sui or to a local keystore.
+- **Survives Java upgrades.** The trust list is the OS's, not the JRE's
+  `cacerts`, so reinstalling or upgrading Java does not invalidate the trust.
+
+If you are on Linux/macOS or need to trust a private CA that is not in the OS
+store, fall back to `sslTrustStoreLocation` + `sslTrustStorePassword` pointing
+at a `.jks` or `.p12` file you build with `keytool`.
+
+### Full DB2 SSL example
+
+A typical production-ready DB2 SSL profile with all of the above looks like
+this in the JDBC Properties tab:
+
+```
+jdbc:db2.sslConnection                          = true
+jdbc:db2.sslTrustStoreType                      = Windows-ROOT
+jdbc:db2.clientProgramName                      = Sui
+jdbc:db2.retrieveMessagesFromServerOnGetMessage = true
+jdbc:db2.timestampFormat                        = 1
+```
+
+…combined with a URL of `jdbc:db2://prod.example.com:50001/PAYROLL` on the
+Connection tab.
+
+---
+
+## BigQuery — Common JDBC Properties
+
+The Google / Simba BigQuery JDBC driver (`com.simba.googlebigquery.jdbc.Driver`)
+accepts a long list of connection properties. The handful that matter most for
+day-to-day Sui use are listed below.
+
+All of them are set the same way as DB2: add a row in the **JDBC Properties** tab
+with key `jdbc:big.<propertyName>` (generic — applies to every BigQuery
+connection) or `jdbc:bigquery://…fullUrl.<propertyName>` (specific — applies to
+one connection only).
+
+> **Why `jdbc:big` and not `jdbc:bigquery`?** Sui matches each property key by
+> the longest prefix that the target URL **starts with**. Since every BigQuery
+> URL begins with `jdbc:bigquery://…`, the short prefix `jdbc:big` matches them
+> all. Either spelling works; `jdbc:big` is just shorter to type.
+
+### Property reference
+
+| Property | Typical value | Effect |
+|---|---|---|
+| `OAuthType` | `1` (**recommended**) / `0` / `2` / `3` | Selects the Google authentication flow. `0` = service-account P12 key file, `1` = **user account via browser** (interactive OAuth — driver pops up your default browser, you sign in to Google, and the resulting refresh token is cached), `2` = pre-generated refresh token (headless), `3` = Google Application Default Credentials (uses `gcloud auth application-default login`). For a desktop tool like Sui, **`OAuthType=1` is the strong recommendation**: no JSON or P12 key file to manage, no `gcloud` install required, and it works with both personal and corporate Google accounts. |
+| `EnableSession` | `0` (default) / `1` | When `1`, the driver opens a BigQuery **session** for the connection. This is what lets you run `CREATE TEMP TABLE …`, `DECLARE` variables, multi-statement scripts, and other session-scoped SQL that BigQuery otherwise rejects. Recommended `1` for interactive query work in Sui; leave `0` only if you need strictly stateless one-shot queries. |
+| `Location` | `US` / `EU` / `europe-west1` / `asia-northeast1` / … | The geographic location BigQuery should run the queries in. When omitted, the driver defaults to `US`. **Must** be set explicitly if your datasets live anywhere else — otherwise BigQuery returns *"Dataset … was not found in location US"* even though the dataset exists. Use the same string that appears in the BigQuery console for the dataset (`EU` for the multi-region, or the specific region name like `europe-north1`). |
+
+### Examples
+
+Generic — apply to every BigQuery connection:
+
+```
+jdbc:big.OAuthType     = 1
+jdbc:big.EnableSession = 1
+jdbc:big.Location      = EU
+```
+
+Specific — only the analytics project uses an EU location, everything else
+inherits the default:
+
+```
+jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=my-analytics.Location = europe-west1
+```
+
+### First connect with `OAuthType=1`
+
+1. Set `jdbc:big.OAuthType = 1` (and `EnableSession = 1`, `Location` if needed)
+   in the **JDBC Properties** tab.
+2. On the **Connection** tab, leave **User** and **Password** empty — they are
+   not used in this flow.
+3. Click **Test Connection** (or just connect normally from the main panel).
+4. The driver opens your default browser to a Google sign-in page. Choose the
+   account that has access to the project and approve the requested scopes.
+5. The browser shows *"You may close this window"*. The driver caches a refresh
+   token locally so subsequent connects do **not** open the browser again.
+6. The connection completes and Sui shows the green *Connected: Google
+   BigQuery …* response.
+
+> **Tip:** If you switch Google accounts later (or revoke the cached token in
+> your Google account settings), the next connect will pop the browser again to
+> let you re-authorise. No configuration change is needed inside Sui.
+
+---
+
 ## Save and Cancel
 
 **Save** performs the following in order:
