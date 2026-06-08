@@ -454,6 +454,157 @@ jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=my-analytic
 
 ---
 
+## SQL Server — Common JDBC Properties
+
+The Microsoft JDBC Driver for SQL Server (`com.microsoft.sqlserver.jdbc.SQLServerDriver`)
+accepts a wide range of connection properties for authentication, encryption, and performance.
+The most useful ones for Sui are listed below.
+
+All of them are set the same way as DB2 and BigQuery: add a row in the **JDBC Properties**
+tab with key `jdbc:sqlserver:<propertyName>` (generic — applies to every SQL Server connection)
+or `jdbc:sqlserver://host:port;databaseName=db.<propertyName>` (specific — for one connection only).
+
+### JDBC URL Format
+
+```
+jdbc:sqlserver://[serverName[\instanceName][:portNumber]][;property=value[;property=value]]
+```
+
+**Examples:**
+
+```
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb
+jdbc:sqlserver://localhost:1433;databaseName=mydb;integratedSecurity=true
+jdbc:sqlserver://myserver\SQLEXPRESS:1433;databaseName=mydb
+```
+
+### Property reference
+
+| Property | Typical value | Effect |
+|---|---|---|
+| **Authentication** | | |
+| `authentication` | `ActiveDirectoryIntegrated` / `ActiveDirectoryInteractive` / `ActiveDirectoryServicePrincipal` / `ActiveDirectoryManagedIdentity` / `SqlPassword` | Authentication mode (version 6.0+). `ActiveDirectoryIntegrated` = Microsoft Entra (Azure AD) with integrated Windows auth; `ActiveDirectoryInteractive` = browser-based interactive sign-in; `ActiveDirectoryServicePrincipal` = service principal (client ID in `user`, secret in `password`); `SqlPassword` = SQL login. Default is `NotSpecified` (plain SQL auth). **Note:** `ActiveDirectoryPassword` still works but is **deprecated**. Any non-`NotSpecified` value enables TLS by default. |
+| `integratedSecurity` | `true` / `false` | When `true`, authenticates using **Windows credentials** instead of a SQL user/password — you leave `user` and `password` empty and SQL Server signs you in as your current Windows account. This is purely an **authentication** mechanism (it has **no** effect on TLS / certificate trust — see the note below). With `authenticationScheme=NativeAuthentication` (default) the driver loads the native DLL `mssql-jdbc_auth-<version>-<arch>.dll` (Windows only, must be on `java.library.path`); with `authenticationScheme=JavaKerberos` no DLL is needed (pure-Java Kerberos, works cross-platform). Omit for SQL authentication. |
+| `authenticationScheme` | `NativeAuthentication` / `JavaKerberos` / `NTLM` | How integrated security is performed. `NativeAuthentication` (default) uses the Windows-only native DLL. `JavaKerberos` uses pure-Java Kerberos (requires a `krb5.conf` and a fully-qualified `serverName`). `NTLM` (version 7.4+) uses NTLM with the `domain`, `user`, and `password` properties. Only relevant when `integratedSecurity=true`. |
+| `user` | username | SQL Server login username (for SQL authentication) or Azure AD UPN (for Azure AD modes). |
+| `password` | password | SQL Server login password (for SQL authentication) or Azure AD password. |
+| **Encryption & Security** | | |
+| `encrypt` | `true` / `false` / `strict` | Enables TLS/SSL encryption. `true` = encrypt (driver verifies cert if server has one); `strict` = encrypt and always verify certificate (fail if invalid). **Recommended: `strict` for production.** |
+| `trustServerCertificate` | `true` / `false` | If `false` (default), the driver validates the server's SSL certificate against the Java trust store. If `true`, all certificates are accepted — **only for development environments**. Not recommended for production. |
+| `hostNameInCertificate` | hostname pattern | Expected hostname in the server's SSL certificate (e.g. `*.database.windows.net`). Verifies that the certificate matches the actual server you are connecting to. |
+| `trustStore` | file path | Path to a Java keystore (`.jks` or `.p12`) containing trusted CA certificates. If omitted, the JRE's built-in `cacerts` is used. |
+| `trustStorePassword` | keystore password | Password for the trust store (if `trustStore` is used). |
+| `trustStoreType` | `JKS` / `PKCS12` | Type of the trust store. Default: `JKS`. Use `PKCS12` for FIPS environments. |
+| `clientCertificate` | file path | Path to the client certificate file for client certificate authentication. Supports PFX, PEM, DER, and CER formats. |
+| `clientKey` | file path | Path to the private key file for PEM, DER, and CER client certificates. |
+| `clientKeyPassword` | password | Password to access the `clientKey` file's private key. |
+| **Connection Timeouts** | | |
+| `loginTimeout` | seconds (0-65535) | Connection login timeout. Default: 30 (version 11.2+) or 15 (10.2 and earlier). 0 = use the system default. |
+| `socketTimeout` | milliseconds | Socket read timeout. Default: 0 (infinite). |
+| **Performance & Buffering** | | |
+| `responseBuffering` | `adaptive` / `full` | How the driver buffers result rows: `adaptive` (default) = buffer the minimum needed; `full` = read the entire result set into memory when the statement executes. |
+| `selectMethod` | `direct` / `cursor` | `direct` (default) = keep all result rows in client memory (fastest for processing all rows). `cursor` = create a server cursor keeping only a limited number of rows in client memory — use for very large result sets that don't fit in client memory. |
+| `disableStatementPooling` | `true` / `false` | Whether prepared-statement pooling is disabled. Default: `true` (pooling off). Set to `false` together with a non-zero `statementPoolingCacheSize` to enable pooling. |
+| `statementPoolingCacheSize` | int | Size of the prepared-statement handle cache (version 6.4+). Default: 0 (pooling disabled). Set > 0 and `disableStatementPooling=false` to enable. |
+| `useBulkCopyForBatchInsert` | `true` / `false` | When `true`, uses SQL Server **bulk copy API** for fully-parameterized batch inserts — significantly faster for large inserts (version 9.2+). Default: `false`. |
+| **Other** | | |
+| `databaseName` | database name | Name of the database to connect to. Required. |
+| `instanceName` | instance name | SQL Server named instance (for on-premises, e.g. `SQLEXPRESS`). |
+| `portNumber` | port (1-65535) | Port number, default 1433. |
+| `applicationName` | string (<=128 char) | Application name visible in SQL Profiler and SQL Server Management Studio activity logs. Default: `Microsoft JDBC Driver for SQL Server`. Set to `Sui` for easier tracking. |
+| `sendTimeAsDatetime` | `true` / `false` | When `true` (default), `java.sql.Time` values are sent to the server as SQL Server `datetime`; when `false`, they are sent as SQL Server `time`. |
+| `queryTimeout` | seconds | Query execution timeout. Default: -1 (infinite). |
+| `lockTimeout` | milliseconds | Lock timeout. Default: -1 (wait indefinitely); 0 = no wait. |
+| `sslProtocol` | `TLS` / `TLSv1.2` / `TLSv1.1` / `TLSv1` | TLS protocol to use for the secure connection (version 6.4+). Default: `TLS` (negotiates the highest available). |
+
+### Examples
+
+Generic — apply to every SQL Server connection:
+
+```
+jdbc:sqlserver.encrypt                   = strict
+jdbc:sqlserver.trustServerCertificate    = false
+jdbc:sqlserver.applicationName           = Sui
+jdbc:sqlserver.disableStatementPooling   = false
+jdbc:sqlserver.statementPoolingCacheSize = 250
+```
+
+Specific — properties for one Azure SQL Server connection:
+
+```
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.authentication = ActiveDirectoryPassword
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.encrypt       = strict
+```
+
+### SQL Server SSL / TLS Setup
+
+> **Authentication vs. encryption — a common confusion.** `integratedSecurity`
+> (Windows / Kerberos login) and TLS certificate trust are **independent**.
+> Turning on integrated security does **not** make the driver trust the Windows
+> certificate store, and unlike DB2 there is **no** `Windows-ROOT` option for the
+> SQL Server driver. TLS certificate validation always goes through the **Java**
+> trust store, following this search order:
+>
+> 1. the file named by the `trustStore` property (or the JVM system property
+>    `javax.net.ssl.trustStore`), then
+> 2. `<java-home>/lib/security/jssecacerts`, then
+> 3. `<java-home>/lib/security/cacerts` (the JRE's bundled CA list).
+>
+> So a public-CA certificate (e.g. Azure SQL's) is trusted out of the box because
+> its root is already in `cacerts`. A **private / enterprise CA** is *not* in
+> `cacerts` — you must either import it with `keytool` and point `trustStore` at
+> that file, or (on Windows) bridge the OS store into Java with a custom
+> `trustManagerClass`. Importing the one server certificate is by far the simpler
+> route.
+
+For on-premises SQL Server with SSL enabled:
+
+1. **Enable encryption in the URL or JDBC Properties:**
+
+```
+jdbc:sqlserver.encrypt = strict
+```
+
+2. **Point to the SSL port** (typically **1433** for cleartext, **custom port** for SSL):
+
+```
+jdbc:sqlserver://prodserver:1433;databaseName=mydb
+```
+
+3. **Trust the certificate** — Use a Java keystore with imported certificates:
+
+   ```
+   jdbc:sqlserver.trustStore         = C:\path\to\truststore.jks
+   jdbc:sqlserver.trustStorePassword = keystorepassword
+   ```
+
+   > **Note:** The SQL Server JDBC driver uses `trustStore` (not `trustStoreLocation` — that is the DB2/JCC naming).
+   > SQL Server does not have a built-in `Windows-ROOT` option like DB2. If you need to trust
+   > an enterprise CA on Windows, import its certificate into a Java keystore using `keytool`, then
+   > point `trustStore` at that file. Alternatively, set JVM system properties outside of Sui:
+   > `-Djavax.net.ssl.trustStore=<path> -Djavax.net.ssl.trustStorePassword=<password>`
+
+4. **Verify hostname** (optional but recommended):
+
+```
+jdbc:sqlserver.hostNameInCertificate = *.yourdomain.com
+```
+
+### Full SQL Server SSL example with Azure AD
+
+A production-ready Azure SQL profile with encryption and Microsoft Entra (Azure AD) authentication:
+
+```
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.authentication           = ActiveDirectoryPassword
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.encrypt                 = strict
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.hostNameInCertificate   = *.database.windows.net
+jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb.applicationName         = Sui
+```
+
+Combined with a URL of `jdbc:sqlserver://myserver.database.windows.net:1433;databaseName=mydb` and user credentials on the **Connection** tab.
+
+---
+
 ## Save and Cancel
 
 **Save** performs the following in order:
