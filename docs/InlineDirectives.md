@@ -20,15 +20,26 @@ modify multiple databases in sequence.
 
 ```
 #URL= <jdbc-url>
+#URL= <alias>
 ```
 
 | Part | Description |
 |---|---|
 | `#URL` | Keyword (case-insensitive). |
 | `=` | Separator — the `=` is part of the parsing split, not optional. |
-| `<jdbc-url>` | The full JDBC URL of the target database. Must be the first (and only) token after `=`. Any additional tokens are ignored. |
+| `<jdbc-url>` | The full JDBC URL of the target database. |
+| `<alias>` | The name of a configured connection alias (as defined in the Connection Manager). It is resolved to the alias's full JDBC URL. An alias may contain spaces. |
 
-### Example
+The value after `=` may be **either** a full JDBC URL **or** a connection
+alias. Resolution works as follows:
+
+1. The full trimmed value is first looked up as an alias
+   (`SUI.CONN.<value>.URL`). This allows aliases that contain spaces.
+2. If that fails, the first whitespace-separated token is looked up as an alias.
+3. If neither matches a configured alias, the first token is used verbatim as a
+   literal JDBC URL (the original behavior).
+
+### Example — full URL
 
 ```sql
 SELECT * FROM prod_db.orders WHERE status = 'OPEN';
@@ -41,6 +52,21 @@ SELECT COUNT(*) FROM reporting.summary;
 In this script the first `SELECT` runs against the active connection. After the
 `#URL=` directive the connection switches to `jdbc:db2://prodserver:50000/PRODDB`
 and the second `SELECT` runs there.
+
+### Example — alias
+
+```sql
+SELECT * FROM orders WHERE status = 'OPEN';
+
+#URL= PRODDB;
+
+SELECT COUNT(*) FROM reporting.summary;
+```
+
+Here `PRODDB` is a connection alias. It is resolved to the URL stored in
+`SUI.CONN.PRODDB.URL`, and the alias's configured userid/password are seeded
+into the session credential store so the switch can authenticate without a
+prompt (see **Credential Resolution** below).
 
 ### Credential Resolution
 
@@ -57,9 +83,17 @@ store.
    This key is written when you connect to a URL during the current session.  
    Fallback: the password currently held for the active connection.
 
-> **Requirement:** The target database must have been connected to at least once
-> during the current Sui session so that its credentials are cached in-memory.
-> If the connection fails, an error is shown and script execution stops.
+> **Alias form:** When `#URL=` resolves a connection alias, the alias's
+> configured userid (`SUI.CONN.<alias>.USERID`) and password
+> (`SUI.CONN.<alias>.PW`) are written into the session credential store
+> (`SUI.USERID.<url>` and `SUI.PW.<userid>.<url>`) before the switch. This means
+> an alias with stored credentials can be targeted without a prior connection in
+> the current session — provided the alias has a saved password.
+
+> **Requirement:** For the **URL form**, the target database must have been
+> connected to at least once during the current Sui session so that its
+> credentials are cached in-memory. If the connection fails, an error is shown
+> and script execution stops.
 
 ### Scope
 
@@ -346,7 +380,7 @@ The default delimiter is `;` and can be changed in Sui preferences
 
 | Class | Role |
 |---|---|
-| `nonSQL` | Parses `#SET=` / `#URL=` lines and stores values in `TmpProp`. |
+| `nonSQL` | Parses `#SET=` / `#URL=` lines and stores values in `TmpProp`. For `#URL=`, resolves a connection alias to its full URL (and seeds the alias credentials) when the value matches a configured alias, otherwise treats it as a literal JDBC URL. |
 | `QryInclude` | Resolves `<include>` tags by reading and splicing file content, iterating until no tags remain. |
 | `RunIt` | Resets `TMPURL` before each run; reads it before each SQL statement and switches the `DatabaseManager` connection if non-empty. Also handles `#FILX=` file splicing per statement. |
 | `Sui` | `PutTmpProp` / `GetTmpProp` — session-only in-memory store, never written to disk. `readFile()` — reads file content for `#FILX=`. |
