@@ -15,6 +15,16 @@ Typical use-cases:
 
 ## Starting a comparison
 
+There are two ways to reach the Compare window:
+
+- **From an open Result window** — click the **`≠`** toolbar button (see below).
+- **From CSV files on disk** — use *Tools → Compare CSV Files…* to compare two
+  exported CSV files directly, without loading them into result windows first.
+  This path is designed for very large files (millions of rows) where opening the
+  full result set is impractical.  See [Comparing CSV files](#comparing-csv-files).
+
+### From an open Result window
+
 Every comparison starts from an **open Result window**.  Click the **`≠`** (diff)
 button in its toolbar.  A small menu appears with two sections:
 
@@ -464,7 +474,61 @@ UPDATE statements require at least one **Key** column to be defined.
   5. Click [Differ]  →  empty table means the refactor is correct ✓
 ```
 
-### Workflow D — Re-use a saved preset
+### Workflow D — Document a comparison as a test report
+
+```
+  1. Run the comparison (any method)
+           │
+           ▼
+  2. Open the Test report tab
+           │
+           ▼
+  3. Type a description in the notes area, e.g.:
+       "Pre-deployment check — ORDERS table DEV vs PROD after schema migration v4.2"
+           │
+           ▼
+  4. Click Refresh (or tab out of the description area)
+           │
+           ▼
+  5. Verify the verdict line:  PASS — result sets are identical  ✓
+           │
+           ▼
+  6. Click [Save .md…] → attach the file to the deployment ticket
+     — or —
+     Click [Copy Markdown] → paste into Confluence / GitHub comment
+```
+
+### Workflow E — Compare two large CSV exports
+
+```
+  1. Export the left result:   Result window → Export CSV   → orders_prod.csv
+  2. Export the right result:  Result window → Export CSV   → orders_dev.csv
+
+  3. Tools → Compare CSV Files…
+           │
+           ▼
+  4. Choose orders_prod.csv   (left)
+     Choose orders_dev.csv    (right)
+           │
+           ▼
+  5. Tick "ORDER_ID" in the key-column dialog  →  OK
+           │
+           ▼
+  6. Progress bar streams both files (works for millions of rows)
+           │
+           ▼
+  7. Summary dialog:
+       Identical: 4 812 000   Changed: 3   Left only: 0   Right only: 1
+           │
+           ▼
+  8. Click [Show differences]  →  DiffRep opens with the 4 differing rows
+           │
+           ▼
+  9. Open Test report tab — SQL is pre-filled from the Query Monitor
+     Add notes  →  Save .md…
+```
+
+### Workflow F — Re-use a saved preset
 
 ```
   1. First time setup:
@@ -485,6 +549,147 @@ UPDATE statements require at least one **Key** column to be defined.
               ▼
          All roles restored, diff re-runs immediately ✓
 ```
+
+---
+
+## Comparing CSV files
+
+*Tools → Compare CSV Files…* lets you diff two CSV files produced by Sui's
+**Export to CSV** function without first loading them into result windows.  The
+comparison streams both files so it works on files with millions of rows that
+would be impractical to hold in memory.
+
+### How it works
+
+```
+  1. Choose left CSV file     (file chooser, defaults to the export directory)
+  2. Choose right CSV file
+  3. Pick key column(s)       (or leave all unticked for whole-row matching)
+  4. Progress dialog streams both files in the background
+  5. Summary dialog shows total counts
+  6. "Show differences" opens a DiffRep window with a sample of differing rows
+```
+
+**What is computed across the whole file:**
+
+| Metric | Description |
+|---|---|
+| Identical rows | Rows where every column value matches |
+| Changed rows | Rows matched by key but with at least one cell differing |
+| Only in left | Rows whose key was not found in the right file |
+| Only in right | Rows in the right file that were never matched |
+
+Only up to `SUI.CSVDIFFMAX` differing rows (default 20 000) are forwarded to
+the DiffRep window.  The summary and test report always reflect the **full-file**
+counts, not just the captured sample.
+
+### Key column selection
+
+After both files are selected, a dialog lists all columns that exist in both
+files (case-insensitive name match).  Tick the column(s) that uniquely identify
+a row — this is the key used to match left rows to right rows.
+
+Leave all boxes unticked to use **whole-row matching**: rows are treated as
+identical only when every column value is equal.
+
+### SQL recovery
+
+If the CSV files were exported from Sui in the same session, the SQL query
+that produced each file is automatically retrieved from the Query Monitor and
+included in the Test Report tab of the resulting DiffRep window.
+
+### Configuration
+
+| Property | Default | Effect |
+|---|---|---|
+| `SUI.CSVDIFFMAX` | `20000` | Maximum differing rows forwarded to DiffRep |
+
+---
+
+## Column summary tab
+
+The **Column summary** tab (next to *Diff result*) shows, for every column, how
+many matched-row cells are identical vs differing.  LEFT_ONLY and RIGHT_ONLY rows
+are excluded from these counts since they are row-level, not cell-level,
+differences.
+
+The **Open in query view** button at the bottom of the tab opens the column
+summary table as a full QueryRep result window, giving access to sorting,
+filtering, and XLS export.
+
+---
+
+## Test report tab
+
+The **Test report** tab auto-generates a Markdown document that can be saved or
+copied to document the outcome of a comparison.
+
+### Structure of the generated report
+
+```markdown
+# Result Set Comparison Report
+**<title>**
+
+| Field    | Value                          |
+|----------|--------------------------------|
+| Generated| 2026-06-17 14:23:05            |
+| Verdict  | **PASS — result sets are identical**  (or DIFFERENCES FOUND) |
+| Key cols | ORDER_ID, LINE_NO              |
+
+## Test description
+<text entered in the description area>
+
+## Sources
+| Side  | Source                        |
+|-------|-------------------------------|
+| Left  | `jdbc:db2://prod/MYDB`        |
+| Right | `jdbc:db2://dev/MYDB`         |
+
+## Result summary
+| Metric          | Rows |
+|-----------------|-----:|
+| Identical       | 4821 |
+| Cells differ    |   12 |
+| Only in left    |    0 |
+| Only in right   |    0 |
+| **Total**       | 4833 |
+
+## Column summary
+…per-column identical / differ counts…
+
+## SQL — Left
+```sql
+SELECT …
+```
+
+## SQL — Right
+```sql
+SELECT …
+```
+```
+
+### Controls
+
+| Button | Action |
+|---|---|
+| **Refresh** | Regenerate the preview from the current diff state and description |
+| **Save .md…** | Save the report as a UTF-8 Markdown file |
+| **Copy Markdown** | Copy the raw Markdown to the system clipboard |
+
+The **Test description / notes** text area at the top of the tab is free-form.
+Its content is included verbatim in the *Test description* section of the report.
+The preview regenerates automatically when you leave the text area.
+
+The verdict line shows **PASS** when there are no differing, left-only, or
+right-only rows; otherwise it shows **DIFFERENCES FOUND**.
+
+SQL blocks are populated automatically when:
+- The comparison was started from two QueryRep windows (the SQL from each window
+  is forwarded directly).
+- The comparison was started via *Re-run against connection* (the original SQL
+  and the possibly-edited right-side SQL are both captured).
+- The comparison was started from *Compare CSV Files…* and the files were exported
+  from Sui in the same session (SQL recovered from the Query Monitor).
 
 ---
 
