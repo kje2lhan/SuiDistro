@@ -1,0 +1,67 @@
+name: Build Zui from Zui---Mainframe-Integration-from-Java
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_label:
+        description: 'Label for the release commit (e.g. Zui-1.0.0)'
+        required: true
+        default: 'Zui-latest'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout SuiDistro
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PUBLISH_PAT }}
+
+      - name: Checkout Zui---Mainframe-Integration-from-Java
+        uses: actions/checkout@v4
+        with:
+          repository: kje2lhan/Zui---Mainframe-Integration-from-Java
+          token: ${{ secrets.PUBLISH_PAT }}
+          path: zui-src
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          # Java 11 is the minimum version required by the Zui project's pom.xml;
+          # adjust this if the project targets a different baseline.
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Build with Maven
+        working-directory: zui-src
+        run: mvn --batch-mode --no-transfer-progress clean package -DskipTests
+
+      - name: Copy jar(s) to SuiDistro root
+        run: |
+          echo "Looking for jar-with-dependencies assembly jars..."
+          assembly_count=$(find zui-src/target -maxdepth 1 -name "*jar-with-dependencies.jar" | wc -l)
+          find zui-src/target -maxdepth 1 -name "*jar-with-dependencies.jar" -exec cp {} . \;
+          if [ "$assembly_count" -gt 0 ]; then
+            echo "Copied $assembly_count assembly jar(s)."
+          else
+            echo "No assembly jar found. Falling back to any non-sources/non-javadoc jar..."
+            fallback_count=$(find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" | wc -l)
+            find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" -exec cp -n {} . \;
+            echo "Copied $fallback_count fallback jar(s)."
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- *.jar
+          if git diff --cached --quiet; then
+            echo "No jar changes detected — either no jars were produced or the built jars are identical to those already in the repository."
+            exit 0
+          fi
+          git commit -m "Release ${{ github.event.inputs.release_label }}"
+          git push
