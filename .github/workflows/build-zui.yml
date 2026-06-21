@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout SuiDistro
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.PUBLISH_PAT }}
 
       - name: Checkout Zui---Mainframe-Integration-from-Java
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: kje2lhan/Zui---Mainframe-Integration-from-Java
           token: ${{ secrets.PUBLISH_PAT }}
