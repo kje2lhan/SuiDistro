@@ -242,6 +242,29 @@ The setting is **session-only** — it is not written to the property file.
 
 ---
 
+## Panel visibility toggles
+
+The query editor's right-click menu also lets you show or hide the surrounding
+panels.  Each entry is a **single toggle** whose label reflects the current
+state (`Show …` when the panel is hidden, `Hide …` when it is visible).
+
+| Toggle | What it shows / hides | Mutual exclusion |
+|---|---|---|
+| **Show / Hide SQL Object Tree** | The SQL Object Tree in the left dock | Showing it hides the Query Tree (they share the left dock) |
+| **Show / Hide QueryTree** | The file-based Query Tree in the left dock | Showing it hides the SQL Object Tree |
+| **Show / Hide Query Sheet Overview** | The Sheet Overview on the right | Showing it hides the Query Toolbar (they share the right slot) |
+| **Show / Hide Query Toolbar** | The Query Toolbar (Favourites bar) on the right | Showing it hides the Query Sheet Overview |
+| **Show / Hide Query Tabs** | The tab strip at the bottom of the editor | — |
+
+The SQL Object Tree and the Query Tree share the same left-hand dock panel, so
+only one of the two can be visible at a time; likewise the Query Sheet Overview
+and the Query Toolbar share the right-hand slot.  The same toggles are also
+available from the **Options** menu (see
+[Query Sheets, Tabs and the Sheet List](QuerySheetsAndTabs.md)).  The Query
+Tabs choice is persisted to `SUI.QUERYTABS` in `SuiSys.pro`.
+
+---
+
 ## Quick reference
 
 | Function | Scope | Shortcut |
@@ -264,6 +287,11 @@ The setting is **session-only** — it is not written to the property file.
 | Toggle Comment | selected lines | `Ctrl+7` |
 | Go to Line… | caret only | `Ctrl+G` |
 | Paren Matching toggle | editor-wide | — |
+| Show / Hide SQL Object Tree | left dock | — |
+| Show / Hide QueryTree | left dock | — |
+| Show / Hide Query Sheet Overview | right slot | — |
+| Show / Hide Query Toolbar | right slot | — |
+| Show / Hide Query Tabs | tab strip | — |
 
 ---
 
