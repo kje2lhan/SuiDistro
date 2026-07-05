@@ -48,10 +48,22 @@ jobs:
           if [ "$assembly_count" -gt 0 ]; then
             echo "Copied $assembly_count assembly jar(s)."
           else
-            echo "No assembly jar found. Falling back to any non-sources/non-javadoc jar..."
-            fallback_count=$(find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" | wc -l)
-            find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" -exec cp -n {} . \;
-            echo "Copied $fallback_count fallback jar(s)."
+            echo "No assembly jar found. Checking for shaded *-all.jar and creating jar-with-dependencies alias..."
+            shaded_count=$(find zui-src/target -maxdepth 1 -name "*-all.jar" | wc -l)
+            if [ "$shaded_count" -gt 0 ]; then
+              for jar in zui-src/target/*-all.jar; do
+                [ -e "$jar" ] || continue
+                cp "$jar" .
+                dep_name="$(basename "${jar%-all.jar}")-jar-with-dependencies.jar"
+                cp "$jar" "$dep_name"
+              done
+              echo "Copied $shaded_count shaded jar(s) and created jar-with-dependencies alias jar(s)."
+            else
+              echo "No shaded jar found. Falling back to any non-sources/non-javadoc jar..."
+              fallback_count=$(find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" | wc -l)
+              find zui-src/target -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*original*" -exec cp --update=none {} . \;
+              echo "Copied $fallback_count fallback jar(s)."
+            fi
           fi
 
       - name: Commit and push
