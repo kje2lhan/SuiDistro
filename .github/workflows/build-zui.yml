@@ -38,7 +38,7 @@ jobs:
 
       - name: Build with Maven
         working-directory: zui-src
-        run: mvn --batch-mode --no-transfer-progress clean package -DskipTests
+        run: mvn --batch-mode --no-transfer-progress clean package assembly:single -DdescriptorId=jar-with-dependencies -DskipTests
 
       - name: Copy jar(s) to SuiDistro root
         run: |
