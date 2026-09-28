@@ -454,6 +454,56 @@ jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=my-analytic
 
 ---
 
+## BigQuery (Google driver) — Setup and Common Properties
+
+As of 2025, Google publishes its own **open-source** JDBC driver for BigQuery
+(`com.google.cloud.bigquery.jdbc.BigQueryDriver`), in addition to the older
+Simba/insightsoftware driver documented above. Unlike the Simba driver, the
+Google driver is published on Maven Central and is **bundled directly into
+Sui.jar** — select the **BigQuery-Google** entry in the Driver dropdown and it
+shows **✔ On classpath** immediately, with no JAR to download or configure.
+
+> Use **BigQuery** (Simba) if you already have working Simba-based connections
+> or need Simba-specific features. Use **BigQuery-Google** for new connections —
+> it requires no external JAR and is actively maintained by Google.
+
+### Connecting
+
+1. Select **BigQuery-Google** from the Driver dropdown.
+2. **Port** defaults to `443` automatically.
+3. In the **Project** field, enter `ProjectId=<your-project-id>` (the whole
+   key=value pair — not just the bare ID).
+4. Leave **User** / **Password** empty — BigQuery uses OAuth, not username/password
+   ("No credentials required" is checked automatically).
+5. Add authentication and other options via the **JDBC Properties** tab, keyed
+   `jdbc:bigquery.<propertyName>` (generic) — see below.
+
+### Authentication (`OAuthType`)
+
+| Value | Mode | Notes |
+|---|---|---|
+| `0` | Service account key file/JSON | Requires `OAuthPvtKeyPath` or `OAuthPvtKey` + `OAuthServiceAcctEmail` |
+| `1` | User account (interactive browser OAuth) | Opens a browser sign-in on first connect, like the Simba driver's `OAuthType=1` |
+| `2` | Pre-generated access/refresh token | Requires `OAuthAccessToken` or `OAuthRefreshToken` + `OAuthClientId`/`OAuthClientSecret` |
+| `3` | Application Default Credentials (ADC) | Uses `gcloud auth application-default login` or `GOOGLE_APPLICATION_CREDENTIALS` |
+| `4` | Workload/Workforce Identity Federation (BYOID) | For CI/CD and cross-cloud identity federation |
+
+Example generic JDBC Properties rows:
+
+```
+jdbc:bigquery.OAuthType         = 3
+jdbc:bigquery.DefaultDataset    = my_dataset
+jdbc:bigquery.EnableSession     = true
+jdbc:bigquery.Location          = EU
+```
+
+> **Full property reference:** see Google's
+> [JDBC driver for BigQuery documentation](https://cloud.google.com/bigquery/docs/jdbc-for-bigquery)
+> for the complete list (high-throughput Storage Read/Write API, OpenTelemetry
+> export, proxy settings, etc.).
+
+---
+
 ## SQL Server — Common JDBC Properties
 
 The Microsoft JDBC Driver for SQL Server (`com.microsoft.sqlserver.jdbc.SQLServerDriver`)

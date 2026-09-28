@@ -77,7 +77,9 @@ driver catalog contains templates for:
 - **IBM Db2** for LUW and z/OS (`db2jcc4.jar` — supply the JAR through the
   [Driver / JAR](docs/ConnManager.md) tab).
 - **Google BigQuery** (Simba JDBC driver — supply the JAR, OAuth login via
-  browser is the recommended flow).
+  browser is the recommended flow — or the newer Google-published
+  `google-cloud-bigquery-jdbc` driver, which is bundled via Maven with no
+  external JAR needed).
 - **PostgreSQL**, **MariaDB / MySQL**, **Oracle**, **Microsoft SQL Server**,
   **Mimer**, **Apache Derby**.
 - **SQLite** and **H2** — bundled on the classpath, no extra JAR needed.
