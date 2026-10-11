@@ -1,4 +1,4 @@
-# Sui — a fast, focused desktop SQL workbench
+b# Sui — a fast, focused desktop SQL workbench
 
 **Sui** (SQL Utility Interface) is a single-window, single-jar Java/Swing desktop
 client for running SQL against any database that ships a JDBC driver. It is built
@@ -74,12 +74,16 @@ is designed to be the one tool you keep open all the time.
 Sui talks to any database with a JDBC 4.x driver. Out of the box the bundled
 driver catalog contains templates for:
 
-- **IBM Db2** for LUW and z/OS (`db2jcc4.jar` — supply the JAR through the
-  [Driver / JAR](docs/ConnManager.md) tab).
+- **IBM Db2** for LUW and z/OS (`com.ibm.db2:jcc`, bundled via Maven with no
+  external JAR needed in the default build — see
+  [Build from source](#build-from-source) for a smaller jar that omits it. If
+  you build without it, supply `db2jcc4.jar` yourself through the
+  [Driver / JAR](docs/ConnManager.md) tab instead).
 - **Google BigQuery** (Simba JDBC driver — supply the JAR, OAuth login via
   browser is the recommended flow — or the newer Google-published
   `google-cloud-bigquery-jdbc` driver, which is bundled via Maven with no
-  external JAR needed).
+  external JAR needed in the default build — see
+  [Build from source](#build-from-source) for a smaller jar that omits it).
 - **PostgreSQL**, **MariaDB / MySQL**, **Oracle**, **Microsoft SQL Server**,
   **Mimer**, **Apache Derby**.
 - **SQLite** and **H2** — bundled on the classpath, no extra JAR needed.
@@ -102,6 +106,25 @@ The latest ready-to-run jar is published at
 [github.com/kje2lhan/SuiDistro](https://github.com/kje2lhan/SuiDistro).
 Grab the most recent `Sui*.jar` from the repository — no Maven build is
 required.
+
+### Build from source
+
+Four Maven profiles control whether the Google BigQuery JDBC driver (huge
+transitive dependency tree — grpc, protobuf, google-cloud libraries, ~65MB)
+and/or the IBM Db2 JDBC driver (`com.ibm.db2:jcc`, ~6MB) are bundled into the
+jar. Pick the one that matches the databases you actually use:
+
+```powershell
+mvn clean package                # "full"    (default) — BigQuery + Db2
+mvn clean package -P nobq        # "nobq"    — Db2 only, no BigQuery
+mvn clean package -P nodb2       # "nodb2"   — BigQuery only, no Db2
+mvn clean package -P minimal     # "minimal" — neither (smallest jar)
+```
+
+Each produces `target/Sui075-<version>-<variant>-jar-with-dependencies.jar`.
+Whichever driver(s) you omit can still be added later via the Driver / JAR tab
+in Connection Manager — point it at `db2jcc4.jar` and/or the Simba BigQuery
+JDBC JAR.
 
 ### Launch
 

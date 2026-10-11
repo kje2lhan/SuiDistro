@@ -105,6 +105,38 @@ it takes precedence over Levels 1 and 2:
 
 ---
 
+## Credential groups
+
+Connections can optionally be tagged with a shared **Group** label in the
+Connection Manager (see [ConnManager.md](ConnManager.md#group)). Aliases that
+carry the same group label are assumed to use the same userid and password.
+
+This only affects behaviour **on URL selection** (not at startup, since no alias
+has been connected yet in a fresh session):
+
+1. On every successful `Sui.ConnDB()`, the userid/password just used are recorded
+   as the group's session credentials:
+   ```
+   SUI.GROUPUID.<group>   in TmpProp2   (memory only)
+   SUI.GROUPPW.<group>    in TmpProp2   (memory only)
+   ```
+   This happens in addition to, not instead of, the normal per-URL session cache
+   (`SUI.PW.<uid>.<url>` / `SUI.USERID.<url>`) described above.
+2. When the user switches to a different URL, its group is looked up. If the group
+   already has session credentials recorded (i.e. another alias in the group was
+   already connected this session) **and** the newly-selected URL itself has not
+   yet been connected this session, the group's userid and password are filled in.
+   This check runs immediately after the per-URL session-cache check and before
+   Level 1 (ConnManager profile) — so it is honored even when `SUI.SETPWBLANK=Y`
+   would otherwise force the password blank, and even if the target alias's own
+   profile has `AUTOLOGIN=N` or no stored password at all.
+3. If the selected URL was **already connected earlier in the same session**, its
+   own remembered credentials (per-URL session cache) are used instead — the group
+   never overrides a URL's own session history.
+4. A URL with no `Group` label configured is completely unaffected by this logic.
+
+---
+
 ## Manual connect — `Sui.ConnDB()`
 
 When the user clicks **Connect** (or presses `Ctrl+D`):
@@ -115,6 +147,9 @@ When the user clicks **Connect** (or presses `Ctrl+D`):
    SUI.PW.<userid>.<url>   in TmpProp2   (memory only)
    SUI.USERID.<url>        in TmpProp    (persisted to TmpProp.pro)
    ```
+   If the connected URL belongs to a credential group, `SUI.GROUPUID.<group>` /
+   `SUI.GROUPPW.<group>` in `TmpProp2` are updated as well (see
+   [Credential groups](#credential-groups) above).
 3. These cache entries are consulted first on subsequent URL selections within
    the same session so the user is not re-prompted.
 

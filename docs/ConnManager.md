@@ -45,16 +45,35 @@ URL combobox on the main Sui panel. Choose something descriptive, for example
 > Alias names must be unique. If you type a name that already exists, the existing
 > profile will be silently overwritten on Save.
 
+### Group
+
+An optional, free-form label that groups several aliases together when they share
+the same userid and password — for example several schemas or environments reached
+through the same login (`Prod`, `Reporting-Cluster`, …). The field is an editable
+combo box: pick an existing group from the drop-down or type a new label. Leave it
+blank for connections that don't share credentials with any other alias.
+
+Grouping does not change what is saved to disk — it only affects in-session
+behaviour: once you successfully connect to one alias in a group, its userid and
+password are automatically filled in when you switch to another alias in the same
+group that has **not** already been connected during the current session. A URL
+that was itself already connected this session keeps using its own remembered
+credentials — the group's credentials are never used to override them. See
+[CredentialHandling.md](CredentialHandling.md#credential-groups) for the exact
+priority rules.
+
 ### Driver
 
 A dropdown of all known JDBC drivers, loaded from the bundled `driver.pro` resource.
 Selecting a driver updates the visible form fields and the URL template used to
 auto-build the JDBC URL.
 
-Drivers that need an external JAR (e.g. DB2, Oracle, MariaDB) will show
-**✘ Not loaded** in the Driver/JAR tab until you point the catalog to the JAR file.
-Drivers that are available on the classpath (e.g. SQLite, H2) will show
-**✔ On classpath** without any additional configuration.
+Drivers that need an external JAR (e.g. Oracle, MariaDB — and DB2/BigQuery if
+you built Sui from source with the `minimal`/`nodb2`/`nobq` Maven profile) will
+show **✘ Not loaded** in the Driver/JAR tab until you point the catalog to the
+JAR file. Drivers that are available on the classpath (e.g. SQLite, H2, and
+DB2/BigQuery in the default `full` build) will show **✔ On classpath** without
+any additional configuration.
 
 ### Server, Port, Database / Project, SID
 
