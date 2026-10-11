@@ -102,17 +102,24 @@ custom driver row, set the URL template, and Sui will load it on the next
 
 ### Download
 
-The latest ready-to-run jar is published at
-[github.com/kje2lhan/SuiDistro](https://github.com/kje2lhan/SuiDistro).
-Grab the most recent `Sui*.jar` from the repository — no Maven build is
-required.
+The latest ready-to-run jars are published at
+[github.com/kje2lhan/SuiDistro](https://github.com/kje2lhan/SuiDistro) in two
+flavours — no Maven build is required:
+
+| Jar | Profile | Contents |
+|-----|---------|----------|
+| `Sui*-jar-with-dependencies.jar` | Full | Everything, including the bundled IBM Db2 (`jcc`), Google BigQuery JDBC and FoundationDB client libraries. |
+| `Sui*-minimal.jar` | Minimal | Same application, including the FoundationDB client, but without the bundled Db2 / BigQuery libraries (much smaller). Supply any JDBC driver you need through the [Driver / JAR](docs/ConnManager.md) tab. |
+
+Both jars are produced by `mvn package`.
 
 ### Build from source
 
 Four Maven profiles control whether the Google BigQuery JDBC driver (huge
 transitive dependency tree — grpc, protobuf, google-cloud libraries, ~65MB)
 and/or the IBM Db2 JDBC driver (`com.ibm.db2:jcc`, ~6MB) are bundled into the
-jar. Pick the one that matches the databases you actually use:
+jar. The FoundationDB client is bundled in all profiles. Pick the one that
+matches the databases you actually use:
 
 ```powershell
 mvn clean package                # "full"    (default) — BigQuery + Db2
