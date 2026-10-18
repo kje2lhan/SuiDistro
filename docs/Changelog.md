@@ -1,5 +1,47 @@
 # suidev080
 
+### Sui 0.75Z
+---------
+Full details: [ReleaseNotes-0.75Z.md](ReleaseNotes-0.75Z.md)
+- **Mainframe integration (Zowe / z/OSMF)** — *Zowe Connection Manager*, *Open Mainframe Dataset*, *Save Query to Mainframe* (formatted and wrapped to 72 columns) and the ISPF 3.4-style **Mainframe Explorer**. Requires Java 11+ and the optional `Zui.jar`; the menu items are hidden otherwise
+- Query Result window: **save result to a mainframe dataset as CSV**
+- Zowe TLS: certificate source `WINDOWS-ROOT` / `JAVA` / `CUSTOM` truststore, plus a *Validate TLS certificate* toggle
+- Connection Manager: **credential groups**. Aliases that share a userid/password get credentials filled in after the first connect in the group. New **Apply** button; **Delete** now removes the connection immediately
+- **Google BigQuery JDBC driver** (`BigQuery-Google`) bundled; no external JAR needed
+- Maven build profiles `full` / `nobq` / `nodb2` / `minimal`; Db2 JCC is bundled in `full`; BigQuery driver's transitive dependencies pinned to patched versions (jackson 2.22.3, httpclient5 5.6.3)
+- DB2 → BigQuery converter: pagination, `TO_CHAR`/`TO_DATE`/`TO_NUMBER`, `SUBSTRING … FROM`, `REGEXP_*`, `POSITION`, `BIT*`, explicit `DISTINCT` on set operators, and a CTE column-list rewrite that no longer needs a parser
+- Ext Format SQL: new **Max output line length** wrapping (`SUI.FMT2.MAXLINELEN`)
+- CSV Compare: numbers compare by value (`1.50` = `1.5`)
+- Query Result window: Ctrl+click non-contiguous selection; *Transpose selected rows* replaces the mark-row step
+- Query editor right-click: Show/Hide toggles for SQL Object Tree, Query Tree, Sheet Overview, Query Toolbar and Query Tabs
+- Main toolbar: new **Help (i)** button with links to all help pages
+- Bug fix: the main window always appears at startup; auto-login connects in the background, so an unreachable database no longer blocks startup
+- Startup timing checkpoints in the System Log (`SUI.LOGSTARTUPTIMING=N` turns them off)
+- Bug fix: Undo/Redo no longer stores highlight colour changes or leaks across sheets
+- Bug fix: line-number gutter clipping and alignment
+- Bug fix: Connection Manager *Group* field showed the previous connection's group
+- `DB2SQLCA` uses reflection, so builds without the Db2 driver work
+- Version bump `0.75X` → `0.75Z`
+
+### Sui 0.75Y
+---------
+Full details: [ReleaseNotes-0.75Y.md](ReleaseNotes-0.75Y.md)
+- **CSV File Compare** (*Tools → Compare CSV Files…*) — streams two CSV files of any size into the DiffRep view
+- DiffRep: **Test Report** tab (Markdown, save/copy) and *Open in query view* on the column summary
+- Main window status bar shows rows / status / duration of the last query; QueryBox history shows run stats
+- Query Monitor records exported file paths; buffer raised from 100 to 500
+- Bug fixes: closed tabbed result windows no longer appear in the diff picker; NPE in QueryBox navigation
+
+### Sui 0.75X
+---------
+Full details: [ReleaseNotes-0.75X.md](ReleaseNotes-0.75X.md)
+- `#URL=` accepts a connection **alias** as well as a full JDBC URL
+- Query Result window: **List unique values** on the column header menu
+- Security: OS command injection (CWE-78) removed from file launch/delete (`SafeExec`)
+- Bug fixes: reordering sheets no longer corrupts sheet content; drag-reorder is disabled while the sheet list is sorted; Add/Remove/Replace Schema skip CTE names; help popups readable in all themes
+- Stale BigQuery connections are evicted while idle
+- Docs: SQL Server sections in ConnManager.md
+
 ### Sui 0.75V
 ---------
 - Query Result window: **diff highlight** — Ctrl+H highlights row differences across all selected rows (anchor = first selected column), Ctrl+Shift+H highlights column differences across all selected columns (anchor = first selected row), Ctrl+R clears; colours adapt to dark/light theme

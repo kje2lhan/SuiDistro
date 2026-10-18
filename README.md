@@ -1,4 +1,4 @@
-b# Sui — a fast, focused desktop SQL workbench
+# Sui — a fast, focused desktop SQL workbench
 
 **Sui** (SQL Utility Interface) is a single-window, single-jar Java/Swing desktop
 client for running SQL against any database that ships a JDBC driver. It is built
@@ -10,7 +10,7 @@ MySQL, SQL Server, SQLite, H2, Derby and a handful of in-house JDBC sources, Sui
 is designed to be the one tool you keep open all the time.
 
 > Looking for what changed in the latest version? See the
-> [Sui 0.75V release notes](docs/ReleaseNotes-0.75V.md) — or the
+> [Sui 0.75Z release notes](docs/ReleaseNotes-0.75Z.md) — or the
 > [full version history](docs/Changelog.md).
 
 ---
@@ -222,7 +222,10 @@ copied between machines as easily as any other text file.
 The release notes for each released version live in [docs/](docs/) and can be
 read individually:
 
-[0.75V (current)](docs/ReleaseNotes-0.75V.md) ·
+[0.75Z (current)](docs/ReleaseNotes-0.75Z.md) ·
+[0.75Y](docs/ReleaseNotes-0.75Y.md) ·
+[0.75X](docs/ReleaseNotes-0.75X.md) ·
+[0.75V](docs/ReleaseNotes-0.75V.md) ·
 [0.75U](docs/ReleaseNotes-0.75U.md) ·
 [0.75T](docs/ReleaseNotes-0.75T.md) ·
 [0.75S](docs/ReleaseNotes-0.75S.md) ·
