@@ -74,19 +74,15 @@ is designed to be the one tool you keep open all the time.
 Sui talks to any database with a JDBC 4.x driver. Out of the box the bundled
 driver catalog contains templates for:
 
-- **IBM Db2** for LUW and z/OS (`com.ibm.db2:jcc`, bundled via Maven with no
-  external JAR needed in the default build — see
-  [Build from source](#build-from-source) for a smaller jar that omits it. If
-  you build without it, supply `db2jcc4.jar` yourself through the
-  [Driver / JAR](docs/ConnManager.md) tab instead).
-- **Google BigQuery** (Simba JDBC driver — supply the JAR, OAuth login via
-  browser is the recommended flow — or the newer Google-published
-  `google-cloud-bigquery-jdbc` driver, which is bundled via Maven with no
-  external JAR needed in the default build — see
-  [Build from source](#build-from-source) for a smaller jar that omits it).
+- **IBM Db2** for LUW and z/OS (`com.ibm.db2:jcc`, included in the full jar.
+  With the minimal jar, supply `db2jcc4.jar` yourself through the
+  [Driver / JAR](docs/ConnManager.md) tab).
+- **Google BigQuery** (the Google-published `google-cloud-bigquery-jdbc`
+  driver is included in the full jar; the Simba JDBC driver is also supported —
+  supply the JAR. OAuth login via browser is the recommended flow).
 - **PostgreSQL**, **MariaDB / MySQL**, **Oracle**, **Microsoft SQL Server**,
-  **Mimer**, **Apache Derby**.
-- **SQLite** and **H2** — bundled on the classpath, no extra JAR needed.
+  **Mimer**, **Apache Derby**, **SQLite** and **H2** — supply the driver JAR
+  through the Driver / JAR tab.
 
 Any other JDBC driver works too — drop the JAR in the Driver / JAR tab, add a
 custom driver row, set the URL template, and Sui will load it on the next
@@ -102,41 +98,19 @@ custom driver row, set the URL template, and Sui will load it on the next
 
 ### Download
 
-The latest ready-to-run jars are published at
-[github.com/kje2lhan/SuiDistro](https://github.com/kje2lhan/SuiDistro) in two
-flavours — no Maven build is required:
+Download the latest version from **[sui.nu/download](https://sui.nu/download/)**
+or the [GitHub releases page](https://github.com/kje2lhan/SuiDistro/releases).
+Sui comes in two flavours:
 
-| Jar | Profile | Contents |
-|-----|---------|----------|
-| `Sui*-jar-with-dependencies.jar` | Full | Everything, including the bundled IBM Db2 (`jcc`), Google BigQuery JDBC and FoundationDB client libraries. |
-| `Sui*-minimal.jar` | Minimal | Same application, including the FoundationDB client, but without the bundled Db2 / BigQuery libraries (much smaller). Supply any JDBC driver you need through the [Driver / JAR](docs/ConnManager.md) tab. |
-
-Both jars are produced by `mvn package`.
-
-### Build from source
-
-Four Maven profiles control whether the Google BigQuery JDBC driver (huge
-transitive dependency tree — grpc, protobuf, google-cloud libraries, ~65MB)
-and/or the IBM Db2 JDBC driver (`com.ibm.db2:jcc`, ~6MB) are bundled into the
-jar. The FoundationDB client is bundled in all profiles. Pick the one that
-matches the databases you actually use:
-
-```powershell
-mvn clean package                # "full"    (default) — BigQuery + Db2
-mvn clean package -P nobq        # "nobq"    — Db2 only, no BigQuery
-mvn clean package -P nodb2       # "nodb2"   — BigQuery only, no Db2
-mvn clean package -P minimal     # "minimal" — neither (smallest jar)
-```
-
-Each produces `target/Sui075-<version>-<variant>-jar-with-dependencies.jar`.
-Whichever driver(s) you omit can still be added later via the Driver / JAR tab
-in Connection Manager — point it at `db2jcc4.jar` and/or the Simba BigQuery
-JDBC JAR.
+| Jar | Contents |
+|-----|----------|
+| `sui-full.jar` | Everything, including the bundled IBM Db2 (`jcc`), Google BigQuery JDBC and FoundationDB client libraries. |
+| `sui-minimal.jar` | Same application, including the FoundationDB client, but without the bundled Db2 / BigQuery libraries (much smaller). Supply any JDBC driver you need through the [Driver / JAR](docs/ConnManager.md) tab. |
 
 ### Launch
 
 ```powershell
-java -jar Sui074-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+java -jar sui-full.jar
 ```
 
 On the first launch Sui creates its configuration directory automatically. By
@@ -207,13 +181,14 @@ copied between machines as easily as any other text file.
 
 ## Project structure
 
+This repository distributes Sui; the Sui source code is not public.
+
 | Path | What's there |
 |---|---|
-| [src/](src/) | Sui source — one Java class per file, no nested packages. |
-| [docs/](docs/) | User and reference documentation. |
-| [pom.xml](pom.xml) | Maven build descriptor. |
-| [maven/](maven/) | Bundled Maven distribution (optional, used by `mvx.bat`). |
-| [target/](target/) | Build output (created by Maven). |
+| `Sui075-*.jar` | Ready-to-run Sui jars, published as GitHub Releases. |
+| [docs/](docs/) | User and reference documentation, and the pages of the [sui.nu](https://sui.nu) website. |
+| [mkdocs.yml](mkdocs.yml), [hooks/](hooks/) | Website configuration (MkDocs Material). |
+| [.github/workflows/](.github/workflows/) | Publishing the website and creating releases. |
 
 ---
 
@@ -261,6 +236,7 @@ version, and any text printed to the console.
 
 ## Licence
 
-See [LICENSE](maven/LICENSE) for licence details, [NOTICE](maven/NOTICE) for
-third-party notices, and [SECURITY.md](SECURITY.md) for how to report security
-issues.
+Sui is **freeware**: free to use and to share unchanged, but not open source.
+See [docs/license.md](docs/license.md) (also at [sui.nu/license](https://sui.nu/license/))
+for the full terms and the third-party libraries included in the jars.
+Report security issues privately to kjell@sui.nu.

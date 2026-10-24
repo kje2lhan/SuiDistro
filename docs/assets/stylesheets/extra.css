@@ -1,0 +1,129 @@
+/* Sui brand: the yellow of the original Sui logo, with dark text on top. */
+:root {
+  --sui-yellow: #ffef3a;
+  --sui-yellow-strong: #f2dc00;
+  --sui-ink: #1b1b1b;
+
+  --md-primary-fg-color: var(--sui-yellow);
+  --md-primary-fg-color--light: #fff59d;
+  --md-primary-fg-color--dark: var(--sui-yellow-strong);
+  --md-primary-bg-color: var(--sui-ink);
+  --md-primary-bg-color--light: rgba(27, 27, 27, 0.7);
+
+  --md-accent-fg-color: #b08900;
+  --md-accent-fg-color--transparent: rgba(176, 137, 0, 0.1);
+  --md-accent-bg-color: var(--sui-ink);
+
+  --md-typeset-a-color: #7a5f00;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #2a2a1c;
+  --md-primary-fg-color--dark: #1f1f14;
+  --md-primary-bg-color: var(--sui-yellow);
+  --md-primary-bg-color--light: rgba(255, 239, 58, 0.75);
+
+  --md-accent-fg-color: var(--sui-yellow);
+  --md-accent-fg-color--transparent: rgba(255, 239, 58, 0.1);
+
+  --md-typeset-a-color: #ffe14d;
+}
+
+/* Logo has its own black border; give it a little room in the header. */
+.md-header__button.md-logo img {
+  height: 1.6rem;
+  border-radius: 2px;
+}
+
+/* ---------- Home page ---------- */
+
+.sui-hero {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 1rem 0 2.5rem;
+}
+
+.sui-hero__logo {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+}
+
+.sui-hero h1 {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+}
+
+.sui-hero__tagline {
+  font-size: 1.15rem;
+  margin: 0 0 1.2rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.sui-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.sui-hero__meta {
+  margin-top: 0.8rem;
+  font-size: 0.75rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--sui-yellow);
+  border-color: var(--sui-ink);
+  color: var(--sui-ink);
+}
+
+.md-typeset .md-button--primary:hover,
+.md-typeset .md-button--primary:focus {
+  background-color: var(--sui-yellow-strong);
+  border-color: var(--sui-ink);
+  color: var(--sui-ink);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary {
+  border-color: var(--sui-yellow);
+}
+
+.sui-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.sui-feature {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+}
+
+.sui-feature h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.sui-feature p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .sui-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .sui-hero__logo {
+    width: 80px;
+    height: 80px;
+  }
+}

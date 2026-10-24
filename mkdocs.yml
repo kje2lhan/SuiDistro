@@ -1,0 +1,122 @@
+site_name: Sui
+site_description: Sui, a free, single-jar desktop SQL client for any JDBC database.
+site_url: https://sui.nu/
+repo_url: https://github.com/kje2lhan/SuiDistro
+repo_name: kje2lhan/SuiDistro
+copyright: Copyright &copy; Kjell Hansson. Sui is freeware.
+
+docs_dir: docs
+
+# Internal developer notes in docs/ that are not part of the public site.
+exclude_docs: |
+  ConnDB.md
+  MainWindowLayout.md
+  hierarchy-*.md
+  unreferenced-classes.md
+
+hooks:
+  - hooks/sui_version.py
+
+extra:
+  # sui_version is filled in by hooks/sui_version.py from the top entry of docs/Changelog.md.
+  download_base: https://github.com/kje2lhan/SuiDistro/releases/latest/download
+  releases_url: https://github.com/kje2lhan/SuiDistro/releases
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kje2lhan/SuiDistro
+      name: Sui on GitHub
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+theme:
+  name: material
+  logo: assets/images/sui_liten.png
+  favicon: assets/images/sui_liten.png
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Download: download.md
+  - User guide:
+      - Getting started:
+          - Databases and drivers: databases.md
+          - Connection Manager: ConnManager.md
+          - Credential handling: CredentialHandling.md
+      - Working with SQL:
+          - Query sheets and tabs: QuerySheetsAndTabs.md
+          - Inline directives: InlineDirectives.md
+          - Additional edit functions: AdditionalEditFunctions.md
+      - Working with results:
+          - Query result window: QueryRepWindow.md
+          - Result set compare: ResultSetCompare.md
+      - Mainframe:
+          - Mainframe Explorer: MainframeExplorer.md
+      - Configuration:
+          - Sui home directory: SuiHome.md
+          - Profile recovery: ProFileRecovery.md
+      - FAQ: faq.md
+  - Release notes:
+      - Changelog: Changelog.md
+      - "0.75Z": ReleaseNotes-0.75Z.md
+      - "0.75Y": ReleaseNotes-0.75Y.md
+      - "0.75X": ReleaseNotes-0.75X.md
+      - "0.75V": ReleaseNotes-0.75V.md
+      - "0.75U": ReleaseNotes-0.75U.md
+      - "0.75T": ReleaseNotes-0.75T.md
+      - "0.75S": ReleaseNotes-0.75S.md
+      - "0.75R": ReleaseNotes-0.75R.md
+      - "0.75Q": ReleaseNotes-0.75Q.md
+      - "0.75P": ReleaseNotes-0.75P.md
+      - "0.75O": ReleaseNotes-0.75O.md
+      - "0.75N": ReleaseNotes-0.75N.md
+      - "0.75M": ReleaseNotes-0.75M.md
+      - "0.75L": ReleaseNotes-0.75L.md
+      - "0.75K": ReleaseNotes-0.75K.md
+      - "0.75J": ReleaseNotes-0.75J.md
+      - "0.75G": ReleaseNotes-0.75G.md
+      - "0.75F": ReleaseNotes-0.75F.md
+      - "0.75C": ReleaseNotes-0.75C.md
+      - "0.75B": ReleaseNotes-0.75B.md
+      - "0.75A": ReleaseNotes-0.75A.md
+  - License: license.md

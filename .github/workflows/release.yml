@@ -1,0 +1,82 @@
+name: Publish Sui release
+
+# Creates a GitHub Release from jars already committed to the repository root.
+# The assets get fixed names (sui-full.jar, sui-minimal.jar, Zui.jar) so that
+# https://github.com/kje2lhan/SuiDistro/releases/latest/download/<name> always
+# points at the newest version. sui.nu links to those URLs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Sui version to publish (e.g. 0.75Z)'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout SuiDistro
+        uses: actions/checkout@v5
+
+      - name: Collect jars
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+[A-Za-z0-9]*$ ]]; then
+            echo "::error::Version '$VERSION' does not look like 0.75Z"
+            exit 1
+          fi
+
+          full=(Sui*-"$VERSION"-full-jar-with-dependencies.jar Sui*-"$VERSION"-jar-with-dependencies.jar)
+          minimal=(Sui*-"$VERSION"-*minimal.jar)
+          zui=(sui-mainframe-integration-*-jar-with-dependencies.jar)
+
+          if [ ${#full[@]} -eq 0 ]; then
+            echo "::error::No full jar for version $VERSION in the repository root"
+            exit 1
+          fi
+
+          mkdir dist
+          cp "${full[0]}" dist/sui-full.jar
+          echo "sui-full.jar    <- ${full[0]}"
+          if [ ${#minimal[@]} -gt 0 ]; then
+            cp "${minimal[0]}" dist/sui-minimal.jar
+            echo "sui-minimal.jar <- ${minimal[0]}"
+          else
+            echo "::warning::No minimal jar for version $VERSION"
+          fi
+          if [ ${#zui[@]} -gt 0 ]; then
+            cp "${zui[0]}" dist/Zui.jar
+            echo "Zui.jar         <- ${zui[0]}"
+          fi
+
+          (cd dist && sha256sum *.jar > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+          cat > notes.md <<EOF
+          Sui $VERSION
+
+          - **sui-full.jar**: Sui with the IBM Db2 and Google BigQuery drivers built in
+          - **sui-minimal.jar**: Sui without the Db2 and BigQuery drivers
+          - **Zui.jar**: optional mainframe (Zowe) add-on, needs Java 11+
+
+          What's new: https://sui.nu/ReleaseNotes-$VERSION/
+          License: https://sui.nu/license/ (freeware, not open source)
+          EOF
+          gh release create "v$VERSION" dist/* \
+            --title "Sui $VERSION" \
+            --notes-file notes.md \
+            --target "$GITHUB_SHA" \
+            --latest
