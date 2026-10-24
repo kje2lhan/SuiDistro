@@ -10,23 +10,38 @@
   --md-primary-bg-color: var(--sui-ink);
   --md-primary-bg-color--light: rgba(27, 27, 27, 0.7);
 
-  --md-accent-fg-color: #b08900;
-  --md-accent-fg-color--transparent: rgba(176, 137, 0, 0.1);
+  /* Text stays gray; yellow is only used for backgrounds and underlines. */
+  --md-accent-fg-color: #000000;
+  --md-accent-fg-color--transparent: rgba(0, 0, 0, 0.06);
   --md-accent-bg-color: var(--sui-ink);
 
-  --md-typeset-a-color: #7a5f00;
+  --md-typeset-a-color: #333333;
+  --sui-link-underline: var(--sui-yellow-strong);
 }
 
 [data-md-color-scheme="slate"] {
   --md-primary-fg-color: #2a2a1c;
   --md-primary-fg-color--dark: #1f1f14;
-  --md-primary-bg-color: var(--sui-yellow);
-  --md-primary-bg-color--light: rgba(255, 239, 58, 0.75);
+  --md-primary-bg-color: #e6e6e6;
+  --md-primary-bg-color--light: rgba(230, 230, 230, 0.7);
 
-  --md-accent-fg-color: var(--sui-yellow);
-  --md-accent-fg-color--transparent: rgba(255, 239, 58, 0.1);
+  --md-accent-fg-color: #ffffff;
+  --md-accent-fg-color--transparent: rgba(255, 255, 255, 0.08);
 
-  --md-typeset-a-color: #ffe14d;
+  --md-typeset-a-color: #d6d6d6;
+  --sui-link-underline: rgba(255, 239, 58, 0.6);
+}
+
+/* Gray links need an underline to stand out from body text. */
+.md-typeset a:not(.md-button):not(.headerlink) {
+  text-decoration: underline;
+  text-decoration-color: var(--sui-link-underline);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.md-typeset a:not(.md-button):not(.headerlink):hover {
+  text-decoration-color: currentColor;
 }
 
 /* Logo has its own black border; give it a little room in the header. */
