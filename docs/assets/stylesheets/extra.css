@@ -1,5 +1,8 @@
-/* Sui brand: the yellow of the original Sui logo, with dark text on top. */
-:root {
+/* Sui brand: the yellow of the original Sui logo, with dark text on top.
+   Material sets its colour variables on [data-md-color-scheme], so they must be
+   overridden there as well as on :root. */
+:root,
+[data-md-color-scheme="default"] {
   --sui-yellow: #ffef3a;
   --sui-yellow-strong: #f2dc00;
   --sui-ink: #1b1b1b;
