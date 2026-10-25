@@ -90,6 +90,19 @@
   color: var(--md-default-fg-color--light);
 }
 
+/* Outline buttons: Material colours their text with the (yellow) primary colour. */
+.md-typeset .md-button {
+  color: var(--md-typeset-a-color);
+  border-color: currentColor;
+}
+
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus {
+  background-color: var(--sui-yellow);
+  border-color: var(--sui-ink);
+  color: var(--sui-ink);
+}
+
 .md-typeset .md-button--primary {
   background-color: var(--sui-yellow);
   border-color: var(--sui-ink);
