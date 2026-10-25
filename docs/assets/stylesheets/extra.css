@@ -10,13 +10,13 @@
   --md-primary-bg-color: var(--sui-ink);
   --md-primary-bg-color--light: rgba(27, 27, 27, 0.7);
 
-  /* Text stays gray; yellow is only used for backgrounds and underlines. */
+  /* Text stays gray; yellow is only used for backgrounds (header, buttons). */
   --md-accent-fg-color: #000000;
   --md-accent-fg-color--transparent: rgba(0, 0, 0, 0.06);
   --md-accent-bg-color: var(--sui-ink);
 
   --md-typeset-a-color: #333333;
-  --sui-link-underline: var(--sui-yellow-strong);
+  --sui-link-underline: #8a8a8a;
 }
 
 [data-md-color-scheme="slate"] {
