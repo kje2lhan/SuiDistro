@@ -102,6 +102,9 @@ Download the latest version from **[sui.nu/download](https://sui.nu/download/)**
 or the [GitHub releases page](https://github.com/kje2lhan/SuiDistro/releases).
 Sui comes in two flavours:
 
+The website links directly to the latest versioned JARs committed here. Rename
+your download to the corresponding short name below before using the launch command.
+
 | Jar | Contents |
 |-----|----------|
 | `sui-full.jar` | Everything, including the bundled IBM Db2 (`jcc`), Google BigQuery JDBC and FoundationDB client libraries. |
@@ -185,7 +188,7 @@ This repository distributes Sui; the Sui source code is not public.
 
 | Path | What's there |
 |---|---|
-| `Sui075-*.jar` | Ready-to-run Sui jars, published as GitHub Releases. |
+| `Sui075-*.jar` | Ready-to-run Sui jars, linked directly from the website. |
 | [docs/](docs/) | User and reference documentation, and the pages of the [sui.nu](https://sui.nu) website. |
 | [mkdocs.yml](mkdocs.yml), [hooks/](hooks/) | Website configuration (MkDocs Material). |
 | [.github/workflows/](.github/workflows/) | Publishing the website and creating releases. |
