@@ -7,6 +7,8 @@ on:
       - 'docs/**'
       - 'hooks/**'
       - 'mkdocs.yml'
+      - 'Sui*.jar'
+      - 'sui-mainframe-integration-*.jar'
       - '.github/workflows/site.yml'
   workflow_dispatch:
 

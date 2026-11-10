@@ -3,7 +3,7 @@ name: Publish Sui release
 # Creates a GitHub Release from jars already committed to the repository root.
 # The assets get fixed names (sui-full.jar, sui-minimal.jar, Zui.jar) so that
 # https://github.com/kje2lhan/SuiDistro/releases/latest/download/<name> always
-# points at the newest version. sui.nu links to those URLs.
+# points at the newest published release. sui.nu links directly to committed jars.
 
 on:
   workflow_dispatch:

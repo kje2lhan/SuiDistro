@@ -19,7 +19,7 @@ hooks:
 
 extra:
   # sui_version is filled in by hooks/sui_version.py from the top entry of docs/Changelog.md.
-  download_base: https://github.com/kje2lhan/SuiDistro/releases/latest/download
+  download_base: https://raw.githubusercontent.com/kje2lhan/SuiDistro/main
   releases_url: https://github.com/kje2lhan/SuiDistro/releases
   generator: false
   social:
