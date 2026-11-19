@@ -249,7 +249,7 @@ ones that don't.
 
 ## See also
 
-- [Main window layout](MainWindowLayout.md)
+- [Main window layout](https://github.com/kje2lhan/SuiDistro/blob/main/docs/MainWindowLayout.md)
 - [Profile recovery](ProFileRecovery.md)
 - [Result window](QueryRepWindow.md)
 - [Inline directives](InlineDirectives.md)

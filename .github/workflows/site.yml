@@ -38,8 +38,10 @@ jobs:
 
       - name: Build site
         run: |
-          mkdocs build
+          mkdocs build --strict
           test -s site/index.html
+          test -s site/assets/images/sui_liten.png
+          test -s site/assets/stylesheets/extra.css
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

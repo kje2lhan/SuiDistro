@@ -54,7 +54,7 @@
 | In-app help | New feature | **Help…** entry added to the query editor right-click popup (top-level) and to its **Additional Edit functions** submenu — opens [AdditionalEditFunctions.md](AdditionalEditFunctions.md) |
 | In-app help | New feature | Main menu **Help** extended with **Query Sheets & Tabs…**, **Inline Directives…** and **Profile Recovery…** — each opens the matching doc in a popup |
 | Docs | New | [QuerySheetsAndTabs.md](QuerySheetsAndTabs.md) — user-oriented guide to query sheets, the tab strip and the Query Sheet Overview (creating/renaming/colouring sheets, drag-and-drop reorder, search with AND/OR/IN, bidirectional sync between tabs and Sheet List, per-sheet connection memory, all related `SuiSys.pro` properties) |
-| Docs | New | [README.md](../README.md) rewritten as a short user-oriented landing page (highlights, supported databases, getting started linking to the prebuilt jar at <https://github.com/kje2lhan/SuiDistro>, a typical session, version history); the previous developer-oriented README is preserved as [Changelog.md](Changelog.md) |
+| Docs | New | [README.md](https://github.com/kje2lhan/SuiDistro/blob/main/README.md) rewritten as a short user-oriented landing page (highlights, supported databases, getting started linking to the prebuilt jar at <https://github.com/kje2lhan/SuiDistro>, a typical session, version history); the previous developer-oriented README is preserved as [Changelog.md](Changelog.md) |
 | Build | Enhancement | `docs/*.md` is now bundled into the assembly jar under `/docs/` so the in-app help works from a clean install with no external files; `HelpDialog` still falls back to `./docs/<name>.md` on disk for development runs |
 | Version | Bump | `0.75U` → `0.75V` |
 
@@ -555,7 +555,7 @@ panel work together. It covers:
   (`QueryRepTabbedFrame`), which is independent of the editor sheet tabs.
 - A reference table of all related properties in `SuiSys.pro`.
 
-The top-level [README.md](../README.md) has been rewritten as a short,
+The top-level [README.md](https://github.com/kje2lhan/SuiDistro/blob/main/README.md) has been rewritten as a short,
 user-oriented landing page: a tagline, "What Sui is good at", a highlights
 table linking into `docs/`, a list of supported databases, a *Getting
 started* section pointing to the prebuilt jar at

@@ -262,6 +262,6 @@ version, and any text printed to the console.
 
 ## Licence
 
-See [LICENSE](maven/LICENSE) for licence details, [NOTICE](maven/NOTICE) for
-third-party notices, and [SECURITY.md](SECURITY.md) for how to report security
-issues.
+Sui is freeware. See the [license](docs/license.md) for terms and third-party
+notices, and [security reporting](docs/license.md#security) for how to report
+security issues.
