@@ -72,7 +72,7 @@ Dataset names are checked before any request: `MY.SEQ.DATA` or
 `*`, and must contain at least one dot. z/OSMF and network errors, including the
 HTTP status and response body, appear in red in the status line and in a dialog.
 
-### Requirements and gating (`Sui.java`)
+### Requirements and gating (`Sui.java`) { #requirements-and-gating }
 
 The four mainframe menu items are added only when **both** conditions hold at
 startup:

@@ -7,6 +7,15 @@ copyright: Copyright &copy; Kjell Hansson. Sui is freeware.
 
 docs_dir: docs
 
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+
 # Internal developer notes in docs/ that are not part of the public site.
 exclude_docs: |
   ConnDB.md
@@ -81,6 +90,7 @@ nav:
   - User guide:
       - Getting started:
           - Databases and drivers: databases.md
+          - MySQL setup: MySQL.md
           - Connection Manager: ConnManager.md
           - Credential handling: CredentialHandling.md
       - Working with SQL:
